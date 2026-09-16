@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Laboratorio interactivo para comprender el signo de la covarianza.">
+  <title>Laboratorio del signo de la covarianza</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #13233d;
+      --muted: #667085;
+      --paper: #f5f7fb;
+      --card: #ffffff;
+      --line: #dfe5ef;
+      --navy: #173f73;
+      --blue: #1f63d3;
+      --blue-soft: #e6f0ff;
+      --positive: #087f5b;
+      --positive-soft: #dff6ed;
+      --negative: #c2410c;
+      --negative-soft: #fff0e8;
+      --zero: #667085;
+      --shadow: 0 18px 50px rgba(24, 52, 91, .12);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { font-size: 16px; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(61, 113, 196, .12), transparent 28rem),
+        linear-gradient(180deg, #eef3fa 0, var(--paper) 22rem);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    button, input { font: inherit; }
+
+    button { touch-action: manipulation; }
+
+    .page {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      padding: 24px clamp(16px, 3vw, 42px) 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--blue);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 820px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4vw, 3.8rem);
+      font-weight: 500;
+      letter-spacing: -.035em;
+      line-height: 1.02;
+    }
+
+    .intro {
+      max-width: 620px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .formula-chip {
+      flex: 0 0 auto;
+      margin-top: 6px;
+      padding: 12px 16px;
+      border: 1px solid rgba(23, 63, 115, .14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .72);
+      box-shadow: 0 8px 24px rgba(23, 63, 115, .08);
+      color: var(--navy);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(340px, .75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      overflow: hidden;
+      border: 1px solid rgba(23, 63, 115, .12);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .chart-card { min-width: 0; }
+
+    .chart-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .instruction {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .mouse-icon {
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .legend i { width: 9px; height: 9px; border-radius: 3px; }
+    .legend .pos { background: var(--positive); }
+    .legend .neg { background: var(--negative); }
+
+    .chart-wrap {
+      position: relative;
+      min-height: 510px;
+      padding: 10px 12px 0;
+      background: #fbfcff;
+    }
+
+    #plot {
+      display: block;
+      width: 100%;
+      height: 510px;
+      overflow: visible;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .quadrant-positive { fill: #e4f5ee; }
+    .quadrant-negative { fill: #fff0e7; }
+    .grid-line { stroke: #dfe6f0; stroke-width: 1; }
+    .axis-line { stroke: #8797ad; stroke-width: 1.4; }
+    .mean-line { stroke: #294d78; stroke-width: 2.1; stroke-dasharray: 8 7; }
+    .tick-text { fill: #718096; font-size: 12px; }
+    .axis-title { fill: #243b5b; font-size: 14px; font-weight: 800; }
+    .mean-label { fill: #173f73; font-size: 13px; font-weight: 800; }
+    .quadrant-label { font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+    .quadrant-label.positive { fill: #087f5b; }
+    .quadrant-label.negative { fill: #c2410c; }
+    .guide-x { stroke: #1f63d3; stroke-width: 2; stroke-dasharray: 5 5; }
+    .guide-y { stroke: #7c3aed; stroke-width: 2; stroke-dasharray: 5 5; }
+    .guide-label { font-size: 12px; font-weight: 800; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+    .trend-line { stroke: #173f73; stroke-width: 7; stroke-linecap: round; opacity: .88; cursor: grab; }
+    .trend-hit { stroke: transparent; stroke-width: 28; cursor: grab; }
+    .trend-line.dragging, .trend-hit.dragging { cursor: grabbing; }
+    .handle-ring { fill: #fff; stroke: #173f73; stroke-width: 4; cursor: grab; filter: drop-shadow(0 4px 5px rgba(23,63,115,.2)); }
+    .handle-dot { fill: #1f63d3; pointer-events: none; }
+    .handle-ring:focus { outline: none; stroke: #ffb000; stroke-width: 6; }
+    .point { stroke: #fff; stroke-width: 3; cursor: pointer; filter: drop-shadow(0 3px 4px rgba(19,35,61,.2)); }
+    .point.positive { fill: #0b9b70; }
+    .point.negative { fill: #e4571e; }
+    .point.zero { fill: #7d8797; }
+    .point.selected { stroke: #152849; stroke-width: 4; }
+    .point:focus { outline: none; stroke: #ffb000; stroke-width: 5; }
+    .point-index { fill: #fff; font-size: 11px; font-weight: 900; pointer-events: none; text-anchor: middle; dominant-baseline: central; }
+
+    .selected-readout {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+      min-height: 82px;
+      padding: 13px 18px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .point-badge {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .readout-label { margin: 0 0 2px; color: var(--muted); font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .readout-equation { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(.95rem, 2vw, 1.2rem); }
+    .sign-pill { min-width: 104px; padding: 8px 11px; border-radius: 12px; text-align: center; font-size: .83rem; font-weight: 900; }
+    .sign-pill.positive { background: var(--positive-soft); color: var(--positive); }
+    .sign-pill.negative { background: var(--negative-soft); color: var(--negative); }
+    .sign-pill.zero { background: #edf0f4; color: var(--zero); }
+
+    .side { display: grid; gap: 18px; }
+    .section { padding: 18px; }
+    .section-title { margin: 0 0 14px; font-family: Georgia, "Times New Roman", serif; font-size: 1.28rem; font-weight: 600; }
+
+    .preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .preset {
+      border: 1px solid #cdd7e6;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--navy);
+      font-size: .88rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .preset:hover { border-color: var(--blue); background: var(--blue-soft); transform: translateY(-1px); }
+    .preset:focus-visible, .icon-button:focus-visible, input:focus-visible { outline: 3px solid rgba(31, 99, 211, .28); outline-offset: 2px; }
+    .preset[aria-pressed="true"] { border-color: var(--blue); background: var(--navy); color: #fff; }
+
+    .control-row { margin-top: 16px; }
+    .control-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 7px; color: var(--ink); font-size: .88rem; font-weight: 800; }
+    .control-value { color: var(--blue); font-variant-numeric: tabular-nums; }
+    input[type="range"] { width: 100%; accent-color: var(--blue); }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 16px;
+    }
+
+    .metric { padding: 11px 12px; border: 1px solid var(--line); border-radius: 13px; background: #f8faff; }
+    .metric small { display: block; margin-bottom: 2px; color: var(--muted); font-size: .75rem; font-weight: 700; }
+    .metric strong { color: var(--navy); font-family: Georgia, "Times New Roman", serif; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+    .metric.result { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .metric.result strong { font-size: 1.55rem; }
+    .cov-sign { padding: 6px 9px; border-radius: 999px; font-size: .78rem; font-weight: 900; }
+    .cov-sign.positive { background: var(--positive-soft); color: var(--positive); }
+    .cov-sign.negative { background: var(--negative-soft); color: var(--negative); }
+    .cov-sign.zero { background: #edf0f4; color: var(--zero); }
+
+    .explanation {
+      margin: 14px 0 0;
+      padding: 11px 12px;
+      border-left: 4px solid var(--blue);
+      border-radius: 0 10px 10px 0;
+      background: var(--blue-soft);
+      color: #24466f;
+      font-size: .88rem;
+    }
+
+    .table-card { grid-column: 1 / -1; }
+    .table-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px 12px;
+    }
+    .table-header h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.42rem; }
+    .table-header p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; }
+    .table-note { color: var(--muted); font-size: .78rem; text-align: right; }
+    .table-scroll { overflow-x: auto; border-top: 1px solid var(--line); }
+    table { width: 100%; min-width: 980px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th { padding: 10px 12px; background: #f2f5fa; color: #4b5f7a; font-size: .76rem; letter-spacing: .025em; text-align: left; white-space: nowrap; }
+    td { padding: 11px 12px; border-top: 1px solid #e9edf4; color: #2a3f5d; font-size: .86rem; white-space: nowrap; }
+    tbody tr { cursor: pointer; transition: background .15s ease; }
+    tbody tr:hover { background: #f6f9ff; }
+    tbody tr.selected { background: #eaf2ff; box-shadow: inset 4px 0 var(--blue); }
+    tbody tr:focus { outline: 3px solid rgba(31, 99, 211, .3); outline-offset: -3px; }
+    .pindex { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 9px; background: var(--navy); color: #fff; font-weight: 900; }
+    .expression { font-family: Georgia, "Times New Roman", serif; font-size: .96rem; }
+    .table-sign { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 9px; font-weight: 900; }
+    .table-sign::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .table-sign.positive { background: var(--positive-soft); color: var(--positive); }
+    .table-sign.negative { background: var(--negative-soft); color: var(--negative); }
+    .table-sign.zero { background: #edf0f4; color: var(--zero); }
+
+    .footer-note { margin: 16px 2px 0; color: var(--muted); font-size: .82rem; text-align: center; }
+
+    @media (max-width: 1000px) {
+      .workspace { grid-template-columns: 1fr; }
+      .side { grid-template-columns: 1fr 1fr; }
+      .table-card { grid-column: auto; }
+    }
+
+    @media (max-width: 700px) {
+      .page { padding-top: 16px; }
+      .topbar { display: block; }
+      .formula-chip { display: inline-block; margin-top: 14px; white-space: normal; }
+      .chart-head { align-items: flex-start; flex-direction: column; }
+      .legend { justify-content: flex-start; }
+      .chart-wrap { min-height: 440px; padding-inline: 2px; }
+      #plot { height: 440px; }
+      .selected-readout { grid-template-columns: auto 1fr; }
+      .sign-pill { grid-column: 1 / -1; width: 100%; }
+      .side { grid-template-columns: 1fr; }
+      .table-header { align-items: flex-start; flex-direction: column; }
+      .table-note { text-align: left; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Laboratorio visual</p>
+        <h1>¿Por qué la covarianza cambia de signo?</h1>
+        <p class="intro">Mueve los extremos de la recta —o arrastra la propia recta— y observa cómo cada punto aporta un producto positivo, negativo o nulo.</p>
+      </div>
+      <div class="formula-chip" aria-label="Fórmula de la covarianza poblacional">Cov(X,Y) = Σ[(xᵢ − x̄)(yᵢ − ȳ)] / n</div>
+    </header>
+
+    <section class="workspace" aria-label="Simulador de covarianza">
+      <article class="card chart-card">
+        <div class="chart-head">
+          <p class="instruction"><span class="mouse-icon" aria-hidden="true">↔</span><span><strong>Arrastra</strong> los tiradores azules o la recta. Selecciona un punto para descomponerlo.</span></p>
+          <div class="legend" aria-label="Leyenda">
+            <span><i class="pos"></i> producto positivo</span>
+            <span><i class="neg"></i> producto negativo</span>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <svg id="plot" viewBox="0 0 800 510" role="img" aria-labelledby="plotTitle plotDesc">
+            <title id="plotTitle">Gráfico interactivo del signo de la covarianza</title>
+            <desc id="plotDesc">Los ejes de las medias dividen el gráfico en cuatro cuadrantes. Los puntos verdes tienen producto positivo y los naranjas, negativo.</desc>
+            <defs>
+              <clipPath id="plotClip"><rect id="clipRect" x="58" y="24" width="714" height="430" rx="4"></rect></clipPath>
+            </defs>
+            <g id="quadrants" clip-path="url(#plotClip)"></g>
+            <g id="grid"></g>
+            <g id="meanCross"></g>
+            <g id="quadrantLabels"></g>
+            <g id="selectedGuides" clip-path="url(#plotClip)"></g>
+            <g id="trend" clip-path="url(#plotClip)"></g>
+            <g id="points" clip-path="url(#plotClip)"></g>
+            <g id="axes"></g>
+          </svg>
+        </div>
+
+        <div class="selected-readout" aria-live="polite">
+          <div class="point-badge" id="selectedBadge">P4</div>
+          <div>
+            <p class="readout-label">Punto seleccionado · cálculo completo</p>
+            <p class="readout-equation" id="selectedEquation"></p>
+          </div>
+          <div class="sign-pill" id="selectedSign"></div>
+        </div>
+      </article>
+
+      <aside class="side">
+        <section class="card section">
+          <h2 class="section-title">Cambia la tendencia</h2>
+          <div class="preset-grid" aria-label="Ejemplos de tendencia">
+            <button class="preset" type="button" data-preset="positive">↗ Positiva</button>
+            <button class="preset" type="button" data-preset="negative">↘ Negativa</button>
+            <button class="preset" type="button" data-preset="zero">→ Casi nula</button>
+            <button class="preset" type="button" data-preset="random">⤨ Sorpréndeme</button>
+          </div>
+
+          <div class="control-row">
+            <label class="control-label" for="scatter">Dispersión de los puntos <span class="control-value" id="scatterValue">18 %</span></label>
+            <input id="scatter" type="range" min="0" max="100" value="18" step="1">
+          </div>
+
+          <div class="summary" aria-label="Resultados">
+            <div class="metric"><small>Media de X</small><strong id="meanX">x̄ = 5,00</strong></div>
+            <div class="metric"><small>Media de Y</small><strong id="meanY">ȳ = 5,00</strong></div>
+            <div class="metric result">
+              <div><small>Covarianza (÷ n)</small><strong id="covariance">+0,00</strong></div>
+              <span class="cov-sign" id="covSign">Nula</span>
+            </div>
+          </div>
+          <p class="explanation" id="explanation"></p>
+        </section>
+
+        <section class="card section">
+          <h2 class="section-title">La regla en 20 segundos</h2>
+          <div style="display:grid; gap:10px">
+            <div style="display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:start">
+              <span style="width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--positive-soft);color:var(--positive);font-weight:900">+</span>
+              <div><strong>Mismo lado de ambas medias</strong><br><span style="color:var(--muted);font-size:.86rem">Las dos restas tienen el mismo signo: (+)(+) o (−)(−).</span></div>
+            </div>
+            <div style="display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:start">
+              <span style="width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--negative-soft);color:var(--negative);font-weight:900">−</span>
+              <div><strong>Lados opuestos</strong><br><span style="color:var(--muted);font-size:.86rem">Una resta es positiva y la otra negativa: (+)(−) o (−)(+).</span></div>
+            </div>
+            <div style="display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:start">
+              <span style="width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#edf0f4;color:var(--zero);font-weight:900">0</span>
+              <div><strong>Sobre una media</strong><br><span style="color:var(--muted);font-size:.86rem">Si xᵢ = x̄ o yᵢ = ȳ, el producto de ese punto vale 0.</span></div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="card table-card">
+        <div class="table-header">
+          <div>
+            <h2>La cuenta, punto por punto</h2>
+            <p>Cada fila desarrolla las dos restas antes de multiplicarlas.</p>
+          </div>
+          <span class="table-note">Haz clic en una fila para localizar el punto en el gráfico.</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Punto</th>
+                <th>xᵢ</th>
+                <th>yᵢ</th>
+                <th>Resta en X: xᵢ − x̄</th>
+                <th>Resta en Y: yᵢ − ȳ</th>
+                <th>Producto de las restas</th>
+                <th>Signo</th>
+              </tr>
+            </thead>
+            <tbody id="calculationRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <p class="footer-note">La herramienta usa la covarianza poblacional (divide entre n). Funciona sin conexión y no guarda ningún dato.</p>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const NS = 'http://www.w3.org/2000/svg';
+      const W = 800;
+      const H = 510;
+      const margin = { left: 58, right: 28, top: 24, bottom: 56 };
+      const innerW = W - margin.left - margin.right;
+      const innerH = H - margin.top - margin.bottom;
+      const domainMin = 0;
+      const domainMax = 10;
+      const residualPattern = [0.12, -0.52, 0.34, -0.18, 0.48, -0.38, 0.14];
+
+      const state = {
+        a: { x: 1.35, y: 2.1 },
+        b: { x: 8.65, y: 8.15 },
+        scatter: 0.18,
+        selected: 3,
+        activePreset: 'positive',
+        drag: null
+      };
+
+      const el = {
+        plot: document.getElementById('plot'),
+        quadrants: document.getElementById('quadrants'),
+        grid: document.getElementById('grid'),
+        meanCross: document.getElementById('meanCross'),
+        quadrantLabels: document.getElementById('quadrantLabels'),
+        guides: document.getElementById('selectedGuides'),
+        trend: document.getElementById('trend'),
+        points: document.getElementById('points'),
+        axes: document.getElementById('axes'),
+        selectedBadge: document.getElementById('selectedBadge'),
+        selectedEquation: document.getElementById('selectedEquation'),
+        selectedSign: document.getElementById('selectedSign'),
+        scatter: document.getElementById('scatter'),
+        scatterValue: document.getElementById('scatterValue'),
+        meanX: document.getElementById('meanX'),
+        meanY: document.getElementById('meanY'),
+        covariance: document.getElementById('covariance'),
+        covSign: document.getElementById('covSign'),
+        explanation: document.getElementById('explanation'),
+        rows: document.getElementById('calculationRows')
+      };
+
+      function svg(tag, attrs = {}, text = '') {
+        const node = document.createElementNS(NS, tag);
+        Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+        if (text) node.textContent = text;
+        return node;
+      }
+
+      const sx = value => margin.left + (value - domainMin) / (domainMax - domainMin) * innerW;
+      const sy = value => margin.top + innerH - (value - domainMin) / (domainMax - domainMin) * innerH;
+      const dx = px => domainMin + (px - margin.left) / innerW * (domainMax - domainMin);
+      const dy = py => domainMin + (margin.top + innerH - py) / innerH * (domainMax - domainMin);
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+      const nearZero = value => Math.abs(value) < 0.005;
+      const signClass = value => nearZero(value) ? 'zero' : value > 0 ? 'positive' : 'negative';
+      const signLabel = value => nearZero(value) ? 'Nulo' : value > 0 ? 'Positivo' : 'Negativo';
+      const fmt = value => (nearZero(value) ? 0 : value).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const signed = value => `${value > 0.005 ? '+' : value < -0.005 ? '−' : ''}${fmt(Math.abs(value))}`;
+
+      function getPoints() {
+        return residualPattern.map((residual, i) => {
+          const t = (i + 1) / (residualPattern.length + 1);
+          const x = state.a.x + (state.b.x - state.a.x) * t;
+          const baseY = state.a.y + (state.b.y - state.a.y) * t;
+          const y = clamp(baseY + residual * state.scatter * 8, .15, 9.85);
+          return { x, y };
+        });
+      }
+
+      function stats(points) {
+        const meanX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
+        const meanY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
+        const rows = points.map((p, index) => {
+          const deltaX = p.x - meanX;
+          const deltaY = p.y - meanY;
+          return { ...p, index, deltaX, deltaY, product: deltaX * deltaY };
+        });
+        const covariance = rows.reduce((sum, p) => sum + p.product, 0) / points.length;
+        return { meanX, meanY, covariance, rows };
+      }
+
+      function drawStaticAxes() {
+        el.grid.replaceChildren();
+        el.axes.replaceChildren();
+
+        for (let v = 0; v <= 10; v += 1) {
+          el.grid.appendChild(svg('line', { x1: sx(v), y1: margin.top, x2: sx(v), y2: margin.top + innerH, class: 'grid-line' }));
+          el.grid.appendChild(svg('line', { x1: margin.left, y1: sy(v), x2: margin.left + innerW, y2: sy(v), class: 'grid-line' }));
+          if (v % 2 === 0) {
+            el.axes.appendChild(svg('text', { x: sx(v), y: margin.top + innerH + 23, class: 'tick-text', 'text-anchor': 'middle' }, String(v)));
+            el.axes.appendChild(svg('text', { x: margin.left - 13, y: sy(v) + 4, class: 'tick-text', 'text-anchor': 'end' }, String(v)));
+          }
+        }
+
+        el.axes.appendChild(svg('line', { x1: margin.left, y1: margin.top + innerH, x2: margin.left + innerW, y2: margin.top + innerH, class: 'axis-line' }));
+        el.axes.appendChild(svg('line', { x1: margin.left, y1: margin.top, x2: margin.left, y2: margin.top + innerH, class: 'axis-line' }));
+        el.axes.appendChild(svg('text', { x: margin.left + innerW, y: H - 10, class: 'axis-title', 'text-anchor': 'end' }, 'Variable X →'));
+        el.axes.appendChild(svg('text', { x: 16, y: margin.top, class: 'axis-title', transform: `rotate(-90 16 ${margin.top})`, 'text-anchor': 'end' }, 'Variable Y →'));
+      }
+
+      function drawQuadrants(s) {
+        const mx = sx(s.meanX);
+        const my = sy(s.meanY);
+        const left = margin.left;
+        const right = margin.left + innerW;
+        const top = margin.top;
+        const bottom = margin.top + innerH;
+
+        el.quadrants.replaceChildren(
+          svg('rect', { x: left, y: top, width: Math.max(0, mx - left), height: Math.max(0, my - top), class: 'quadrant-negative' }),
+          svg('rect', { x: mx, y: top, width: Math.max(0, right - mx), height: Math.max(0, my - top), class: 'quadrant-positive' }),
+          svg('rect', { x: left, y: my, width: Math.max(0, mx - left), height: Math.max(0, bottom - my), class: 'quadrant-positive' }),
+          svg('rect', { x: mx, y: my, width: Math.max(0, right - mx), height: Math.max(0, bottom - my), class: 'quadrant-negative' })
+        );
+
+        el.meanCross.replaceChildren(
+          svg('line', { x1: mx, y1: top, x2: mx, y2: bottom, class: 'mean-line' }),
+          svg('line', { x1: left, y1: my, x2: right, y2: my, class: 'mean-line' }),
+          svg('text', { x: mx + 7, y: bottom - 8, class: 'mean-label' }, `x̄ = ${fmt(s.meanX)}`),
+          svg('text', { x: right - 8, y: my - 8, class: 'mean-label', 'text-anchor': 'end' }, `ȳ = ${fmt(s.meanY)}`)
+        );
+
+        const label = (x, y, cls, line1, line2) => {
+          const text = svg('text', { x, y, class: `quadrant-label ${cls}`, 'text-anchor': 'middle' });
+          text.appendChild(svg('tspan', { x, dy: 0 }, line1));
+          text.appendChild(svg('tspan', { x, dy: 16 }, line2));
+          return text;
+        };
+        const lx = left + (mx - left) / 2;
+        const rx = mx + (right - mx) / 2;
+        const ty = top + 22;
+        const by = bottom - 27;
+        el.quadrantLabels.replaceChildren(
+          label(lx, ty, 'negative', '− · +', 'producto −'),
+          label(rx, ty, 'positive', '+ · +', 'producto +'),
+          label(lx, by, 'positive', '− · −', 'producto +'),
+          label(rx, by, 'negative', '+ · −', 'producto −')
+        );
+      }
+
+      function drawTrend() {
+        el.trend.replaceChildren();
+        const x1 = sx(state.a.x), y1 = sy(state.a.y), x2 = sx(state.b.x), y2 = sy(state.b.y);
+        const hit = svg('line', { x1, y1, x2, y2, class: 'trend-hit', 'data-drag': 'line' });
+        const line = svg('line', { x1, y1, x2, y2, class: 'trend-line', 'data-drag': 'line' });
+        el.trend.append(hit, line);
+        ['a', 'b'].forEach(key => {
+          const point = state[key];
+          const ring = svg('circle', {
+            cx: sx(point.x), cy: sy(point.y), r: 13, class: 'handle-ring',
+            tabindex: '0', role: 'slider', 'aria-label': `Extremo ${key === 'a' ? 'izquierdo' : 'derecho'} de la recta`,
+            'aria-valuetext': `x ${fmt(point.x)}, y ${fmt(point.y)}`, 'data-drag': key
+          });
+          const dot = svg('circle', { cx: sx(point.x), cy: sy(point.y), r: 4, class: 'handle-dot' });
+          el.trend.append(ring, dot);
+        });
+      }
+
+      function drawPoints(s) {
+        el.points.replaceChildren();
+        s.rows.forEach((p, i) => {
+          const group = svg('g', { 'data-point': i });
+          const circle = svg('circle', {
+            cx: sx(p.x), cy: sy(p.y), r: i === state.selected ? 15 : 13,
+            class: `point ${signClass(p.product)}${i === state.selected ? ' selected' : ''}`,
+            tabindex: '0', role: 'button',
+            'aria-label': `Punto ${i + 1}: x ${fmt(p.x)}, y ${fmt(p.y)}, producto ${signed(p.product)}`
+          });
+          const number = svg('text', { x: sx(p.x), y: sy(p.y) + .5, class: 'point-index' }, String(i + 1));
+          group.append(circle, number);
+          el.points.appendChild(group);
+        });
+
+        const p = s.rows[state.selected];
+        const mx = sx(s.meanX), my = sy(s.meanY), px = sx(p.x), py = sy(p.y);
+        const midpointX = (mx + px) / 2;
+        const midpointY = (my + py) / 2;
+        el.guides.replaceChildren(
+          svg('line', { x1: mx, y1: py, x2: px, y2: py, class: 'guide-x' }),
+          svg('line', { x1: mx, y1: my, x2: mx, y2: py, class: 'guide-y' }),
+          svg('text', { x: midpointX, y: py - 8, class: 'guide-label', fill: '#1f63d3', 'text-anchor': 'middle' }, `xᵢ − x̄ = ${signed(p.deltaX)}`),
+          svg('text', { x: mx + 8, y: midpointY + 4, class: 'guide-label', fill: '#7c3aed' }, `yᵢ − ȳ = ${signed(p.deltaY)}`)
+        );
+      }
+
+      function updateReadout(s) {
+        const p = s.rows[state.selected];
+        const cls = signClass(p.product);
+        el.selectedBadge.textContent = `P${state.selected + 1}`;
+        el.selectedEquation.textContent = `(${fmt(p.x)} − ${fmt(s.meanX)}) × (${fmt(p.y)} − ${fmt(s.meanY)}) = (${signed(p.deltaX)}) × (${signed(p.deltaY)}) = ${signed(p.product)}`;
+        el.selectedSign.className = `sign-pill ${cls}`;
+        el.selectedSign.textContent = `Producto ${signLabel(p.product).toLowerCase()}`;
+      }
+
+      function updateSummary(s) {
+        const cls = signClass(s.covariance);
+        el.meanX.textContent = `x̄ = ${fmt(s.meanX)}`;
+        el.meanY.textContent = `ȳ = ${fmt(s.meanY)}`;
+        el.covariance.textContent = signed(s.covariance);
+        el.covSign.className = `cov-sign ${cls}`;
+        el.covSign.textContent = signLabel(s.covariance);
+
+        const counts = s.rows.reduce((acc, row) => {
+          acc[signClass(row.product)] += 1;
+          return acc;
+        }, { positive: 0, negative: 0, zero: 0 });
+
+        if (cls === 'positive') {
+          el.explanation.textContent = `Predominan las contribuciones positivas: los puntos tienden a quedar arriba-derecha o abajo-izquierda respecto a las medias (${counts.positive} positivas frente a ${counts.negative} negativas).`;
+        } else if (cls === 'negative') {
+          el.explanation.textContent = `Predominan las contribuciones negativas: los puntos tienden a quedar arriba-izquierda o abajo-derecha respecto a las medias (${counts.negative} negativas frente a ${counts.positive} positivas).`;
+        } else {
+          el.explanation.textContent = 'Las contribuciones positivas y negativas se compensan. X e Y no muestran una tendencia lineal conjunta apreciable.';
+        }
+      }
+
+      function updateTable(s) {
+        el.rows.replaceChildren();
+        s.rows.forEach((p, i) => {
+          const cls = signClass(p.product);
+          const tr = document.createElement('tr');
+          tr.tabIndex = 0;
+          tr.dataset.point = i;
+          if (i === state.selected) tr.classList.add('selected');
+          tr.innerHTML = `
+            <td><span class="pindex">${i + 1}</span></td>
+            <td>${fmt(p.x)}</td>
+            <td>${fmt(p.y)}</td>
+            <td class="expression">${fmt(p.x)} − ${fmt(s.meanX)} = <strong>${signed(p.deltaX)}</strong></td>
+            <td class="expression">${fmt(p.y)} − ${fmt(s.meanY)} = <strong>${signed(p.deltaY)}</strong></td>
+            <td class="expression">(${signed(p.deltaX)}) × (${signed(p.deltaY)}) = <strong>${signed(p.product)}</strong></td>
+            <td><span class="table-sign ${cls}">${signLabel(p.product)}</span></td>`;
+          el.rows.appendChild(tr);
+        });
+      }
+
+      function render() {
+        const s = stats(getPoints());
+        drawQuadrants(s);
+        drawTrend();
+        drawPoints(s);
+        updateReadout(s);
+        updateSummary(s);
+        updateTable(s);
+        document.querySelectorAll('.preset').forEach(button => {
+          button.setAttribute('aria-pressed', button.dataset.preset === state.activePreset ? 'true' : 'false');
+        });
+      }
+
+      function pointerToSvg(event) {
+        const rect = el.plot.getBoundingClientRect();
+        return {
+          x: (event.clientX - rect.left) * W / rect.width,
+          y: (event.clientY - rect.top) * H / rect.height
+        };
+      }
+
+      el.plot.addEventListener('pointerdown', event => {
+        const target = event.target.closest('[data-drag]');
+        if (!target) return;
+        event.preventDefault();
+        const pos = pointerToSvg(event);
+        state.drag = {
+          type: target.dataset.drag,
+          start: pos,
+          a: { ...state.a },
+          b: { ...state.b }
+        };
+        el.plot.setPointerCapture(event.pointerId);
+        document.querySelectorAll('.trend-line, .trend-hit').forEach(node => node.classList.add('dragging'));
+      });
+
+      el.plot.addEventListener('pointermove', event => {
+        if (!state.drag) return;
+        const pos = pointerToSvg(event);
+        if (state.drag.type === 'line') {
+          const deltaX = dx(pos.x) - dx(state.drag.start.x);
+          const deltaY = dy(pos.y) - dy(state.drag.start.y);
+          const minDx = Math.max(.15 - state.drag.a.x, .15 - state.drag.b.x);
+          const maxDx = Math.min(9.85 - state.drag.a.x, 9.85 - state.drag.b.x);
+          const minDy = Math.max(.15 - state.drag.a.y, .15 - state.drag.b.y);
+          const maxDy = Math.min(9.85 - state.drag.a.y, 9.85 - state.drag.b.y);
+          const safeDx = clamp(deltaX, minDx, maxDx);
+          const safeDy = clamp(deltaY, minDy, maxDy);
+          state.a = { x: state.drag.a.x + safeDx, y: state.drag.a.y + safeDy };
+          state.b = { x: state.drag.b.x + safeDx, y: state.drag.b.y + safeDy };
+        } else {
+          state[state.drag.type] = {
+            x: clamp(dx(pos.x), .15, 9.85),
+            y: clamp(dy(pos.y), .15, 9.85)
+          };
+        }
+        state.activePreset = '';
+        render();
+      });
+
+      function endDrag(event) {
+        if (!state.drag) return;
+        state.drag = null;
+        if (el.plot.hasPointerCapture(event.pointerId)) el.plot.releasePointerCapture(event.pointerId);
+        document.querySelectorAll('.trend-line, .trend-hit').forEach(node => node.classList.remove('dragging'));
+      }
+      el.plot.addEventListener('pointerup', endDrag);
+      el.plot.addEventListener('pointercancel', endDrag);
+
+      el.plot.addEventListener('click', event => {
+        const target = event.target.closest('[data-point]');
+        if (!target) return;
+        state.selected = Number(target.dataset.point);
+        render();
+      });
+
+      el.plot.addEventListener('keydown', event => {
+        const point = event.target.closest('[data-point]');
+        if (point && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          state.selected = Number(point.dataset.point);
+          render();
+          return;
+        }
+        const handle = event.target.closest('[data-drag="a"], [data-drag="b"]');
+        if (!handle || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+        event.preventDefault();
+        const key = handle.dataset.drag;
+        const step = event.shiftKey ? .5 : .1;
+        if (event.key === 'ArrowLeft') state[key].x = clamp(state[key].x - step, .15, 9.85);
+        if (event.key === 'ArrowRight') state[key].x = clamp(state[key].x + step, .15, 9.85);
+        if (event.key === 'ArrowUp') state[key].y = clamp(state[key].y + step, .15, 9.85);
+        if (event.key === 'ArrowDown') state[key].y = clamp(state[key].y - step, .15, 9.85);
+        state.activePreset = '';
+        render();
+        requestAnimationFrame(() => el.plot.querySelector(`[data-drag="${key}"]`)?.focus());
+      });
+
+      el.rows.addEventListener('click', event => {
+        const row = event.target.closest('tr[data-point]');
+        if (!row) return;
+        state.selected = Number(row.dataset.point);
+        render();
+      });
+
+      el.rows.addEventListener('keydown', event => {
+        const row = event.target.closest('tr[data-point]');
+        if (!row || (event.key !== 'Enter' && event.key !== ' ')) return;
+        event.preventDefault();
+        state.selected = Number(row.dataset.point);
+        render();
+        requestAnimationFrame(() => el.rows.querySelector(`tr[data-point="${state.selected}"]`)?.focus());
+      });
+
+      el.scatter.addEventListener('input', () => {
+        state.scatter = Number(el.scatter.value) / 100;
+        el.scatterValue.textContent = `${el.scatter.value} %`;
+        state.activePreset = '';
+        render();
+      });
+
+      const presets = {
+        positive: { a: { x: 1.35, y: 2.1 }, b: { x: 8.65, y: 8.15 }, scatter: .18 },
+        negative: { a: { x: 1.35, y: 8.25 }, b: { x: 8.65, y: 1.8 }, scatter: .18 },
+        zero: { a: { x: 1.35, y: 5 }, b: { x: 8.65, y: 5 }, scatter: .65 }
+      };
+
+      document.querySelectorAll('.preset').forEach(button => {
+        button.addEventListener('click', () => {
+          const key = button.dataset.preset;
+          if (key === 'random') {
+            const y1 = .8 + Math.random() * 8.4;
+            const y2 = .8 + Math.random() * 8.4;
+            state.a = { x: 1 + Math.random() * 1.2, y: y1 };
+            state.b = { x: 7.8 + Math.random() * 1.2, y: y2 };
+            state.scatter = .18 + Math.random() * .66;
+          } else {
+            state.a = { ...presets[key].a };
+            state.b = { ...presets[key].b };
+            state.scatter = presets[key].scatter;
+          }
+          state.activePreset = key;
+          el.scatter.value = Math.round(state.scatter * 100);
+          el.scatterValue.textContent = `${el.scatter.value} %`;
+          render();
+        });
+      });
+
+      drawStaticAxes();
+      render();
+    })();
+  </script>
+</body>
+</html>

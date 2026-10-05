@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Control de crucero difuso · Laboratorio 3D</title>
+  <style>
+    :root{--bg:#09111d;--panel:#111e2d;--panel2:#152437;--line:#2a4157;--text:#e8f0f8;--muted:#a8bed0;--cyan:#64dbe7;--blue:#6da8ff;--amber:#ffc36d;--red:#ff6c6c;--green:#8ee0a5;--shadow:0 20px 70px #0005}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 20% -10%,#173455 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}button,input{font:inherit}button{cursor:pointer}a{color:var(--cyan)}a:hover{color:#a5f5f7}button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+    .wrap{width:min(1520px,calc(100% - 40px));margin:auto;padding:24px 0 36px}.topline{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}.topline .dot{display:inline-block;width:8px;height:8px;background:var(--cyan);border-radius:50%;box-shadow:0 0 12px var(--cyan);margin-right:8px}.topline a{text-decoration:none;letter-spacing:0;text-transform:none;font-size:13px;font-weight:600}.hero{display:flex;justify-content:space-between;align-items:end;gap:30px;margin:26px 0 22px}.hero h1{font-size:clamp(28px,3vw,44px);line-height:1.08;letter-spacing:-.045em;margin:0 0 10px;font-weight:750;max-width:720px}.hero p{color:var(--muted);margin:0;max-width:720px}.hero aside{border-left:2px solid var(--cyan);padding-left:15px;color:var(--muted);font-size:13px;max-width:260px}.hero aside strong{color:var(--text);display:block;font-size:14px}
+    .pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px}.pipe{background:#142439;border:1px solid var(--line);border-radius:13px;padding:11px 13px;min-height:58px;display:flex;align-items:center;gap:10px;position:relative}.pipe:not(:last-child):after{content:'›';position:absolute;right:-10px;z-index:1;color:var(--cyan);font-size:22px;font-weight:800}.pipe b{display:grid;place-items:center;background:#26475c;color:var(--cyan);width:26px;height:26px;flex:none;border-radius:8px;font-size:12px}.pipe span{font-size:12px;font-weight:700;line-height:1.15}.pipe small{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:3px}
+    .upper{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(330px,.83fr);gap:14px}.scene-card,.control-card,.section{border:1px solid var(--line);border-radius:20px;background:linear-gradient(155deg,#142338,#0d1a2a);box-shadow:var(--shadow);overflow:hidden}.scene-card{position:relative;min-height:526px}.scene-card canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}.scene-top{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none}.tag{background:#091724d9;border:1px solid #35546a;border-radius:9px;padding:7px 10px;color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.status{background:#091724df;border:1px solid #35546a;border-radius:10px;padding:8px 11px;text-align:right;max-width:240px}.status strong{display:block;font-size:12px}.status span{display:block;color:var(--muted);font-size:11px}.scene-bottom{position:absolute;left:15px;right:15px;bottom:15px;display:flex;align-items:end;justify-content:space-between;gap:12px;pointer-events:none}.readouts{display:flex;gap:7px;flex-wrap:wrap}.readout{background:#071320d9;border:1px solid #325069;border-radius:10px;padding:7px 10px;min-width:98px}.readout span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}.readout strong{font-size:19px;line-height:1.1;font-variant-numeric:tabular-nums}.orbit-tip{font-size:11px;color:#d5e3ef;background:#071320b8;padding:6px 9px;border-radius:7px;white-space:nowrap}
+    .control-card{padding:20px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}.section-head h2,.section h2{font-size:16px;margin:0;letter-spacing:-.02em}.eyebrow{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--cyan);font-weight:800}.micro{color:var(--muted);font-size:12px}.control{margin:17px 0}.control label{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px}.control output{color:var(--text);font-weight:800;font-variant-numeric:tabular-nums}.control input[type=range]{width:100%;accent-color:var(--cyan);margin:10px 0 0;cursor:pointer}.range-ends{display:flex;justify-content:space-between;color:#7f9cb3;font-size:10px;margin-top:-3px}.switch-line{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:13px;margin-top:13px;color:var(--muted);font-size:13px}.switch-line input{appearance:none;width:43px;height:25px;background:#3b5161;border-radius:99px;position:relative;flex:none;cursor:pointer}.switch-line input:before{content:'';position:absolute;left:3px;top:3px;width:19px;height:19px;background:white;border-radius:50%;transition:.2s}.switch-line input:checked{background:#31a8b9}.switch-line input:checked:before{transform:translateX(18px)}.button-row{display:flex;gap:8px;margin-top:20px}.button-row button,.preset-row button{border:1px solid #385770;border-radius:9px;background:#20374b;color:var(--text);font-weight:700;padding:9px 13px}.button-row button:hover,.preset-row button:hover{background:#294a60}.button-row .primary{background:var(--cyan);color:#081924;border-color:var(--cyan);flex:1}.button-row .primary:hover{background:#a3f1f4}.preset-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}.preset-row button{font-size:11px;padding:5px 9px;background:#142638}.preset-row button[aria-pressed=true]{border-color:var(--cyan);color:var(--cyan)}.hint{margin-top:13px;color:var(--muted);font-size:11px}
+    .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.metric{background:#102135;border:1px solid var(--line);border-radius:12px;padding:10px 13px}.metric span{display:block;color:var(--muted);font-size:11px}.metric strong{font-size:20px;font-variant-numeric:tabular-nums}.metric small{font-size:11px;color:var(--muted)}
+    .lower{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1.05fr) minmax(0,.88fr);gap:14px}.section{padding:19px;min-height:328px}.section p{color:var(--muted);font-size:12px;margin:5px 0 15px}.chart-block{margin:10px 0 16px}.chart-caption{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:700}.chart-caption span:last-child{color:var(--cyan);font-variant-numeric:tabular-nums}.membership{width:100%;height:82px;display:block;margin-top:3px}.legend{display:flex;gap:11px;flex-wrap:wrap;color:var(--muted);font-size:10px}.legend span:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:5px}.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}.level{background:#1c3042;border-radius:8px;padding:6px;color:var(--muted);font-size:10px}.level b{display:block;color:var(--text);font-size:12px;font-variant-numeric:tabular-nums}.rule-axis{font-size:11px;color:var(--muted);margin:2px 0 8px}.rule-grid{display:grid;grid-template-columns:68px repeat(3,minmax(0,1fr));gap:5px}.rule-grid .head{font-size:11px;color:var(--muted);text-align:center;padding:6px 2px}.rule-grid .rowlabel{font-size:11px;color:var(--muted);display:flex;align-items:center}.rule-cell{min-height:64px;border:1px solid #345168;background:#16283a;border-radius:9px;padding:6px;position:relative;overflow:hidden}.rule-cell.active{border-color:var(--amber);background:#3b342d}.rule-cell strong{display:block;font-size:11px;line-height:1.2;position:relative;z-index:1}.rule-cell small{color:#bdd0de;font-size:10px;position:relative;z-index:1}.rule-cell .fill{position:absolute;bottom:0;left:0;height:4px;background:var(--amber);width:0;transition:width .14s}.rule-cell.active strong{color:#ffe0a9}.rule-summary{margin-top:12px;padding:9px 10px;background:#172f3f;border-radius:9px;font-size:11px;line-height:1.45;color:var(--muted);min-height:52px}.rule-summary b{color:var(--text)}
+    .decision-card{background:#172c3c;border:1px solid #35536b;border-radius:13px;padding:14px;margin-top:13px}.decision-card .big{font-size:29px;font-weight:800;letter-spacing:-.04em;line-height:1.1;margin:4px 0}.decision-card .big span{font-size:15px;color:var(--muted);font-weight:600}.decision-card .action{font-weight:750;margin-top:8px}.brake-track{height:12px;background:#344c5d;border-radius:99px;overflow:hidden;margin:13px 0 5px}.brake-fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--amber) 50%,var(--red));border-radius:99px;transition:width .15s}.brake-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}.calc{font-size:11px;color:var(--muted);margin-top:11px;line-height:1.45}.calc code{color:#e4eff7;white-space:normal}.lateral{border-top:1px solid var(--line);margin-top:15px;padding-top:13px;font-size:12px}.lateral strong{display:block;margin-bottom:4px}.lateral span{color:var(--muted)}.emergency{margin-top:12px;border-radius:8px;padding:8px 10px;background:#442c2d;color:#ffd4d1;font-size:11px;display:none}.emergency.show{display:block}.footer{color:#9eb3c7;font-size:12px;line-height:1.55;margin-top:17px;display:flex;justify-content:space-between;gap:25px}.footer p{margin:0;max-width:850px}.footer a{white-space:nowrap}
+    [hidden]{display:none!important}body.manual-open{overflow:hidden}
+    .manual-tab{position:fixed;z-index:40;right:0;top:50%;transform:translateY(-50%);min-height:144px;min-width:46px;padding:13px 10px;border:1px solid #48899b;border-right:0;border-radius:12px 0 0 12px;background:#1a4253;color:#e8f9fb;box-shadow:-7px 8px 30px #0007;writing-mode:vertical-rl;font-size:13px;font-weight:750;letter-spacing:.04em}
+    .manual-tab:hover{background:#255c6c}.manual-tab[aria-expanded=true]{visibility:hidden}
+    .manual-backdrop{position:fixed;inset:0;z-index:49;background:#020a12b8}
+    .manual-drawer{position:fixed;z-index:50;top:0;right:0;width:min(470px,100%);height:100dvh;overflow-y:auto;background:#102134;border-left:1px solid #416378;box-shadow:-20px 0 70px #0009;padding:22px 24px 36px}
+    .manual-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line)}.manual-header h2{font-size:24px;line-height:1.15;letter-spacing:-.035em;margin:5px 0 0}.manual-close{min-width:40px;min-height:40px;border:1px solid #46657a;border-radius:9px;background:#20384a;color:var(--text);font-size:22px;line-height:1}.manual-close:hover{background:#31566a}
+    .manual-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:20px 0}.manual-tabs button{min-height:42px;border:1px solid #3a586c;border-radius:9px;background:#172d40;color:var(--muted);font-weight:700}.manual-tabs button[aria-selected=true]{background:var(--cyan);border-color:var(--cyan);color:#09202b}
+    .manual-panel h3{font-size:16px;margin:22px 0 7px}.manual-panel p{color:var(--muted);font-size:13px;margin:0 0 12px}.manual-panel strong{color:var(--text)}.manual-steps{counter-reset:manual;list-style:none;padding:0;margin:0}.manual-steps li{position:relative;padding:0 0 18px 43px;margin-bottom:17px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}.manual-steps li:before{counter-increment:manual;content:counter(manual,decimal-leading-zero);position:absolute;left:0;top:0;width:31px;height:31px;border-radius:8px;background:#24475a;color:var(--cyan);display:grid;place-items:center;font-size:11px;font-weight:800}.manual-steps li strong{display:block;margin-bottom:3px;font-size:14px}
+    .manual-note{padding:12px 13px;border-left:3px solid var(--cyan);background:#18364a;border-radius:0 8px 8px 0;color:#c5dce7;font-size:12px;line-height:1.5}.manual-checks{display:grid;gap:10px}.manual-check{display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #36536a;border-radius:11px;background:#162c3f;font-size:13px;color:var(--muted)}.manual-check input{width:17px;height:17px;margin:2px 0 0;accent-color:var(--cyan);flex:none}.manual-check strong{display:block;margin-bottom:4px;font-size:14px}.manual-check em{font-style:normal;color:#d9edf2}.manual-check:has(input:checked){border-color:#69aa9a;background:#183b42}.manual-check:has(input:checked) strong:before{content:'✓ ';color:var(--green)}.manual-panel code{color:#eaf7fa;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+    .chart-block{position:relative}.membership{touch-action:none;cursor:crosshair}.membership:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:3px}.chart-instruction{color:var(--muted);font-size:11px;margin-top:1px}.chart-tooltip{position:absolute;z-index:4;top:27px;left:0;max-width:min(245px,calc(100% - 8px));padding:9px 11px;border:1px solid #5b8ca0;border-radius:9px;background:#071724f2;color:var(--text);box-shadow:0 8px 25px #0008;pointer-events:none;font-size:11px;line-height:1.4}.chart-tooltip strong,.chart-tooltip span,.chart-tooltip small{display:block}.chart-tooltip span{color:#c7dce7;margin-top:3px}.chart-tooltip small{color:var(--cyan);margin-top:4px}
+    @media(max-width:1050px){.upper{grid-template-columns:1fr}.control-card{display:grid;grid-template-columns:repeat(2,1fr);column-gap:24px}.control-card .section-head,.control-card .switch-line,.control-card .button-row,.control-card .preset-row,.control-card .hint{grid-column:1/-1}.control-card .control{margin:7px 0}.lower{grid-template-columns:1fr 1fr}.lower .section:last-child{grid-column:1/-1}.scene-card,.scene-card canvas{height:500px;min-height:500px}}
+    @media(max-width:670px){.wrap{width:min(100% - 24px,520px);padding-top:16px}.hero{margin-top:18px}.hero aside{display:none}.pipeline{grid-template-columns:repeat(2,1fr)}.pipe:nth-child(2):after{display:none}.upper,.lower{grid-template-columns:1fr}.lower .section:last-child{grid-column:auto}.control-card{display:block}.control-card .control{margin:16px 0}.scene-card,.scene-card canvas{height:390px;min-height:390px}.scene-top{top:10px;left:10px;right:10px}.scene-bottom{left:10px;right:10px;bottom:10px}.orbit-tip{display:none}.readout{min-width:75px;padding:5px 7px}.readout strong{font-size:15px}.status{max-width:174px}.metrics{grid-template-columns:repeat(3,1fr)}.metric{padding:8px}.metric strong{font-size:16px}.metric small{display:none}.footer{display:block}.footer a{display:inline-block;margin-top:7px}.manual-tab{top:auto;bottom:14px;transform:none;writing-mode:horizontal-tb;min-height:44px;min-width:0;padding:9px 14px}.manual-drawer{padding:18px 18px 30px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="topline"><span><span class="dot"></span>Laboratorio interactivo · IA clásica</span><a href="https://journal.ump.edu.my/index.php/ijame/article/view/10346" target="_blank" rel="noopener noreferrer">Estudio que inspira esta demo ↗</a></div>
+    <header class="hero"><div><h1>Del sensor a la maniobra</h1><p>Objetivo: conservar una separación prudente y evitar el alcance mediante el control de velocidad y frenado. La escena también indica cuándo sería viable proponer un cambio de carril.</p></div><aside><strong>Control de crucero inteligente</strong>Visualización didáctica inspirada en una investigación publicada el 21 de septiembre de 2026.</aside></header>
+    <div class="pipeline" aria-label="Etapas del controlador"><div class="pipe"><b>01</b><span>Sensores<small>Distancia y velocidades</small></span></div><div class="pipe"><b>02</b><span>Fusificación<small>Cerca · media · lejos</small></span></div><div class="pipe"><b>03</b><span>Reglas<small>Condiciones graduadas</small></span></div><div class="pipe"><b>04</b><span>Control<small>Freno y dirección</small></span></div></div>
+    <div class="upper">
+      <section class="scene-card" aria-label="Simulación tridimensional de dos vehículos en carretera"><canvas id="scene" aria-label="Escena 3D. Vehículo azul propio, obstáculo naranja y haz del sensor entre ambos."></canvas><div class="scene-top"><div class="tag">Escena 3D · sensores activos</div><div class="status" aria-live="polite"><strong id="sceneStatus">ESCENARIO EN PAUSA</strong><span id="sceneSub">Arrastra para girar · rueda para acercar</span></div></div><div class="scene-bottom"><div class="readouts"><div class="readout"><span>Distancia medida</span><strong id="hudDistance">24 m</strong></div><div class="readout"><span>Velocidad propia</span><strong id="hudSpeed">80 km/h</strong></div><div class="readout"><span>Relativa</span><strong id="hudRelative">−15 km/h</strong></div></div><div class="orbit-tip">Arrastra para orbitar · rueda para zoom</div></div></section>
+      <section class="control-card" aria-label="Controles de la simulación"><div class="section-head"><div><div class="eyebrow">Panel de entrada</div><h2>Magnitudes medidas</h2></div><span class="micro">Valores iniciales</span></div>
+        <div class="control"><label for="distance">Distancia al obstáculo <output id="distanceOut">24 m</output></label><input id="distance" type="range" min="4" max="100" value="24" step="1"><div class="range-ends"><span>4 m</span><span>100 m</span></div></div>
+        <div class="control"><label for="speed">Velocidad del vehículo <output id="speedOut">80 km/h</output></label><input id="speed" type="range" min="20" max="130" value="80" step="1"><div class="range-ends"><span>20 km/h</span><span>130 km/h</span></div></div>
+        <div class="control"><label for="relative">Velocidad relativa del obstáculo <output id="relativeOut">−15 km/h</output></label><input id="relative" type="range" min="-60" max="20" value="-15" step="1"><div class="range-ends"><span>−60 km/h (se acerca)</span><span>+20 km/h (se aleja)</span></div></div>
+        <label class="switch-line" for="lane"><span>Carril izquierdo disponible</span><input id="lane" type="checkbox" checked aria-label="Carril izquierdo disponible"></label>
+        <div class="button-row"><button id="play" class="primary" type="button">▶ Iniciar simulación</button><button id="reset" type="button">↺ Reiniciar</button></div>
+        <div class="preset-row" aria-label="Escenarios de ejemplo"><button type="button" data-preset="calma">Flujo estable</button><button type="button" data-preset="aproximacion" aria-pressed="true">Aproximación</button><button type="button" data-preset="emergencia">Emergencia</button></div>
+        <div class="hint">Al cambiar un valor se reinicia la escena. La velocidad relativa es velocidad del obstáculo − velocidad propia.</div>
+      </section>
+    </div>
+    <div class="metrics" aria-label="Medidas derivadas"><div class="metric"><span>Distancia de seguridad orientativa</span><strong id="safeGap">44,0 m</strong><small>4 m + 1,8 s × velocidad</small></div><div class="metric"><span>Proporción distancia / seguridad</span><strong id="gapRatio">0,55</strong><small>Base de «cerca / media / lejos»</small></div><div class="metric"><span>Tiempo hasta alcance</span><strong id="ttc">5,8 s</strong><small>Si ambos mantuvieran la velocidad</small></div></div>
+    <div class="lower">
+      <section class="section" aria-label="Fusificación de las entradas"><div class="eyebrow">02 · Fusificación</div><h2>Una medida, varios grados</h2><p>La misma cifra puede pertenecer parcialmente a dos etiquetas. Las curvas son funciones didácticas.</p>
+        <div class="chart-block" id="distanceBlock"><div class="chart-caption"><span>Distancia / distancia de seguridad</span><span id="distanceChartValue">0,55</span></div><svg id="distanceChart" class="membership" role="slider" tabindex="0" aria-label="Ajustar distancia desde la gráfica de pertenencia" aria-valuemin="0" aria-valuemax="2.7" aria-valuenow="0.55" preserveAspectRatio="none"></svg><div class="chart-instruction">Haz clic o arrastra en la gráfica para ajustar la distancia.</div><div class="levels" id="distanceLevels"></div><div class="chart-tooltip" id="distanceTooltip" role="tooltip" hidden></div></div>
+        <div class="chart-block" id="closingBlock"><div class="chart-caption"><span>Velocidad de cierre</span><span id="closingChartValue">15 km/h</span></div><svg id="closingChart" class="membership" role="slider" tabindex="0" aria-label="Ajustar velocidad de cierre desde la gráfica de pertenencia" aria-valuemin="0" aria-valuemax="60" aria-valuenow="15" preserveAspectRatio="none"></svg><div class="chart-instruction">Haz clic o arrastra en la gráfica para ajustar la aproximación.</div><div class="levels" id="closingLevels"></div><div class="chart-tooltip" id="closingTooltip" role="tooltip" hidden></div></div>
+      </section>
+      <section class="section" aria-label="Reglas difusas"><div class="eyebrow">03 · Inferencia</div><h2>Nueve reglas; varias pueden actuar</h2><p>Cada regla se activa con el menor grado de sus dos condiciones: <strong>mínimo(μ distancia, μ aproximación)</strong>.</p><div class="rule-axis">Columnas: aproximación · Filas: distancia</div><div class="rule-grid" id="rules"></div><div class="rule-summary" id="ruleSummary" aria-live="polite"></div></section>
+      <section class="section" aria-label="Salida de control"><div class="eyebrow">04 · Decisión</div><h2>Una orden continua</h2><p>Se promedian las salidas de las reglas activas, ponderadas por su intensidad.</p><div class="decision-card" aria-live="polite"><div class="micro">Intensidad final del freno</div><div class="big" id="brakeNumber">0 % <span>de 100 %</span></div><div class="brake-track"><div class="brake-fill" id="brakeFill"></div></div><div class="brake-labels"><span>Mantener</span><span>Moderada</span><span>Fuerte</span></div><div class="action" id="brakeAction">—</div></div><div class="calc" id="calc"></div><div class="emergency" id="emergency">Frenada de emergencia: un umbral crítico tiene prioridad sobre la salida difusa.</div><div class="lateral"><strong id="steerAction">Dirección: —</strong><span id="lateralDetail">—</span></div></section>
+    </div>
+    <footer class="footer"><p>Modelo educativo simplificado. Los conjuntos, umbrales y reglas de esta demo son ilustrativos y no reproducen los parámetros del artículo. El estudio original evaluó en simulación un sistema más amplio, con control longitudinal, cambio de carril, estabilidad lateral y frenada de emergencia; esta escena no es un controlador apto para conducir.</p><a href="https://doi.org/10.15282/ijame.23.3.2026.1.1037" target="_blank" rel="noopener noreferrer">Suárez-Calderón et al. · IJAME 2026 ↗</a></footer>
+  </main>
+  <button id="manualTab" class="manual-tab" type="button" aria-controls="manualDrawer" aria-expanded="false">Manual de uso</button>
+  <div id="manualBackdrop" class="manual-backdrop" hidden></div>
+  <aside id="manualDrawer" class="manual-drawer" role="dialog" aria-modal="true" aria-labelledby="manualTitle" hidden>
+    <div class="manual-header"><div><div class="eyebrow">Guía de la simulación</div><h2 id="manualTitle">Manual de uso</h2></div><button id="manualClose" class="manual-close" type="button" aria-label="Cerrar manual">×</button></div>
+    <div class="manual-tabs" role="tablist" aria-label="Secciones del manual"><button id="manualUseTab" type="button" role="tab" aria-controls="manualUse" aria-selected="true">Cómo usar</button><button id="manualCheckTab" type="button" role="tab" aria-controls="manualCheck" aria-selected="false">Qué comprobar</button></div>
+    <section id="manualUse" class="manual-panel" role="tabpanel" aria-labelledby="manualUseTab">
+      <ol class="manual-steps">
+        <li><strong>Elige un escenario.</strong>«Flujo estable», «Aproximación» y «Emergencia» cargan casos de partida. También puedes mover los tres deslizadores. Cada cambio reinicia la escena.</li>
+        <li><strong>Entiende las medidas.</strong>La distancia se mide en metros. Una velocidad relativa negativa significa que el obstáculo va más despacio que tu coche y te acercas a él. El interruptor indica si el carril izquierdo está libre.</li>
+        <li><strong>Explora la escena 3D.</strong>El coche azul es el tuyo; el naranja es el obstáculo. El haz representa la medida del sensor y la zona coloreada, la distancia de seguridad orientativa. Arrastra para girar y usa la rueda para acercar.</li>
+        <li><strong>Ajusta desde las curvas.</strong>Haz clic o arrastra en cualquiera de las dos gráficas de fusificación. La primera cambia la distancia real; la segunda cambia la velocidad relativa. Con el teclado, enfoca una gráfica y usa las flechas. Al pasar el puntero verás los grados en un tooltip.</li>
+        <li><strong>Sigue la lógica difusa.</strong>Observa los grados entre 0 y 1, las reglas resaltadas y el promedio ponderado que da el porcentaje de freno. Un grado de pertenencia no es una probabilidad.</li>
+        <li><strong>Ejecuta y compara.</strong>«Iniciar» mueve el tráfico y recalcula el freno; «Pausar» detiene el avance y «Reiniciar» devuelve los valores iniciales del escenario.</li>
+      </ol>
+      <div class="manual-note">La distancia de seguridad es orientativa: la demo no garantiza conservarla en todos los casos. La trayectoria verde muestra una propuesta de cambio de carril, pero la animación ejecuta solo el control longitudinal. La frenada de emergencia tiene prioridad sobre el promedio difuso.</div>
+    </section>
+    <section id="manualCheck" class="manual-panel" role="tabpanel" aria-labelledby="manualCheckTab" hidden>
+      <p>Prueba cada caso y marca lo que hayas observado. Puedes cerrar el manual, manipular la escena y volver a esta pestaña.</p>
+      <div class="manual-checks">
+        <label class="manual-check"><input type="checkbox"><span><strong>1. Flujo estable</strong>Selecciona ese escenario. Comprueba que <em>75 m</em> supera la distancia de seguridad orientativa de <em>41,5 m</em>, domina «lejos + lenta» y el freno queda en <em>0 %</em>.</span></label>
+        <label class="manual-check"><input type="checkbox"><span><strong>2. Aproximación</strong>Selecciona <em>24 m, 80 km/h y −15 km/h</em>. Comprueba que se activan a la vez «cerca + moderada» y «cerca + rápida», con una salida cercana al <em>74 %</em>.</span></label>
+        <label class="manual-check"><input type="checkbox"><span><strong>3. Efecto del carril</strong>En «Aproximación», desactiva «Carril izquierdo disponible». La propuesta de dirección debe desaparecer, mientras la orden longitudinal de freno se mantiene.</span></label>
+        <label class="manual-check"><input type="checkbox"><span><strong>4. Emergencia</strong>Selecciona «Emergencia». El tiempo hasta alcance es inferior a <em>1,4 s</em>; el freno final pasa a <em>100 %</em> por la prioridad de emergencia.</span></label>
+        <label class="manual-check"><input type="checkbox"><span><strong>5. Distancia contextual</strong>Fija <em>50 m</em> y velocidad relativa <em>−15 km/h</em>. Sube la velocidad propia de <em>60</em> a <em>120 km/h</em>: la distancia medida no cambia, pero la distancia de seguridad aumenta de <em>34</em> a <em>64 m</em> y «cerca» gana peso.</span></label>
+        <label class="manual-check"><input type="checkbox"><span><strong>6. Evolución temporal</strong>Inicia «Aproximación». La separación disminuye al principio, la velocidad propia baja y los grados y reglas cambian continuamente. Pausa para examinar un instante.</span></label>
+      </div>
+      <h3>Qué significa el resultado</h3><p>El porcentaje final es una orden continua de esta demo. Las curvas y las nueve reglas son ilustrativas; el artículo de 2026 presenta un sistema más amplio validado en simulación.</p>
+    </section>
+  </aside>
+  <script>
+  (() => {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const inputs = {distance:$('distance'), speed:$('speed'), relative:$('relative'), lane:$('lane')};
+    const presets = {calma:{distance:75,speed:75,relative:-4,lane:true},aproximacion:{distance:24,speed:80,relative:-15,lane:true},emergencia:{distance:9,speed:100,relative:-45,lane:false}};
+    const colors = {near:'#64dbe7',mid:'#ffc36d',far:'#8ee0a5',slow:'#8ee0a5',moderate:'#ffc36d',rapid:'#ff7777'};
+    const D = ['Cerca','Media','Lejos'], C = ['Lenta','Moderada','Rápida'];
+    const chartHelp={distanceChart:['Cerca: distancia pequeña respecto a la separación de seguridad.','Media: transición entre cerca y lejos; su pico está en 1,15 veces la separación de seguridad.','Lejos: domina a partir de aproximadamente 1,75 veces la separación de seguridad.'],closingChart:['Lenta: cierre muy pequeño, hasta 3 km/h con pertenencia completa.','Moderada: su pertenencia máxima se alcanza a 12 km/h de cierre.','Rápida: gana peso desde 10 km/h y domina desde 20 km/h.']};
+    const rules = [
+      [{label:'Moderada',value:.55},{label:'Moderada',value:.58},{label:'Fuerte',value:.95}],
+      [{label:'Soltar',value:.14},{label:'Moderada',value:.52},{label:'Moderada',value:.60}],
+      [{label:'Mantener',value:0},{label:'Soltar',value:.12},{label:'Soltar',value:.22}]
+    ];
+    const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+    const tri=(x,a,b,c)=>x<=a||x>=c?0:x===b?1:x<b?(x-a)/(b-a):(c-x)/(c-b);
+    const near=r=>r<=.6?1:clamp((1.05-r)/.45,0,1);
+    const medium=r=>tri(r,.6,1.15,1.7);
+    const far=r=>clamp((r-1.2)/.55,0,1);
+    const slow=c=>c<=3?1:clamp((10-c)/7,0,1);
+    const moderate=c=>tri(c,5,12,20);
+    const rapid=c=>clamp((c-10)/10,0,1);
+    const fmt=(x,n=1)=>Number(x).toLocaleString('es-ES',{minimumFractionDigits:n,maximumFractionDigits:n});
+    const signed=x=>(x<0?'−':x>0?'+':'')+Math.abs(Math.round(x));
+    let state={distance:24,speed:80,leadSpeed:65,running:false,phase:0,last:0,lastUi:0,azimuth:.36,elevation:.58,zoom:1,drag:null,hit:false};
+    let model=null;
+
+    function calculate(s){
+      const relative=s.leadSpeed-s.speed, closing=Math.max(0,-relative), safe=4+1.8*s.speed/3.6, ratio=s.distance/safe;
+      const dm=[near(ratio),medium(ratio),far(ratio)],cm=[slow(closing),moderate(closing),rapid(closing)];
+      const fires=[], strengths=[0,0,0]; let numerator=0,denominator=0;
+      for(let i=0;i<3;i++)for(let j=0;j<3;j++){
+        const alpha=Math.min(dm[i],cm[j]);const rule=rules[i][j];fires.push({i,j,alpha,...rule});
+        numerator+=alpha*rule.value;denominator+=alpha;
+        const k=rule.value===0?0:rule.value<.3?1:2;strengths[k]=Math.max(strengths[k],alpha);
+      }
+      const fuzzy=denominator?numerator/denominator:0;
+      const ttc=closing>.01?s.distance/(closing/3.6):Infinity;
+      const emergency=(s.distance<5)||(closing>1&&ttc<1.4);
+      const brake=emergency?1:fuzzy;
+      const duration=clamp(ttc*.75,2.6,4.4);
+      const lateralAccel=2*Math.PI*3.6/(duration*duration);
+      const canSteer=s.lane&&brake>=.63&&!emergency&&ttc>2.6&&s.distance>10&&lateralAccel<=2.2;
+      return {relative,closing,safe,ratio,dm,cm,fires,strengths,numerator,denominator,fuzzy,ttc,emergency,brake,duration,lateralAccel,canSteer};
+    }
+    function setScenario(presetName){
+      const p=presets[presetName];if(!p)return;
+      for(const k of ['distance','speed','relative'])inputs[k].value=p[k];inputs.lane.checked=p.lane;
+      document.querySelectorAll('[data-preset]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.preset===presetName)));
+      reset();
+    }
+    function reset(){
+      state.running=false;state.hit=false;state.distance=+inputs.distance.value;state.speed=+inputs.speed.value;state.leadSpeed=Math.max(0,state.speed+(+inputs.relative.value));state.phase=0;state.last=0;state.lastUi=0;
+      $('play').textContent='▶ Iniciar simulación';update();
+    }
+    function updateControls(){
+      $('distanceOut').textContent=inputs.distance.value+' m';$('speedOut').textContent=inputs.speed.value+' km/h';$('relativeOut').textContent=signed(+inputs.relative.value)+' km/h';
+    }
+    function drawMembership(id,max,x,functions,labels,values,palette){
+      const svg=$(id),w=420,h=82,left=7,right=8,top=7,bottom=19,plotH=h-top-bottom,plotW=w-left-right;
+      svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+      svg.setAttribute('aria-valuenow',String(+clamp(x,0,max).toFixed(2)));
+      svg.setAttribute('aria-valuetext',id==='distanceChart'?`${fmt(x,2)} veces la distancia de seguridad; ${fmt(state.distance,1)} metros`:`${fmt(x,1)} kilómetros por hora de cierre`);
+      const px=v=>left+clamp(v/max,0,1)*plotW,py=v=>top+(1-v)*plotH;
+      let markup=`<line x1="${left}" y1="${py(0)}" x2="${w-right}" y2="${py(0)}" stroke="#567088" stroke-width="1"/><line x1="${left}" y1="${py(.5)}" x2="${w-right}" y2="${py(.5)}" stroke="#344b61" stroke-dasharray="3 5" stroke-width="1"/>`;
+      for(let i=0;i<3;i++){
+        let path='';for(let step=0;step<=100;step++){const xv=max*step/100;path+=(step?'L':'M')+px(xv).toFixed(1)+','+py(functions[i](xv)).toFixed(1)}
+        markup+=`<path d="${path}" fill="none" stroke="${palette[i]}" stroke-width="2.5" stroke-linecap="round"/>`;
+      }
+      const v=clamp(x,0,max);markup+=`<line x1="${px(v)}" y1="${top}" x2="${px(v)}" y2="${py(0)}" stroke="#fff" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+      for(let i=0;i<3;i++)if(values[i]>.005)markup+=`<circle cx="${px(v)}" cy="${py(values[i])}" r="4.5" fill="${palette[i]}" stroke="#102032" stroke-width="2"/>`;
+      markup+=`<text x="${left}" y="${h-2}" fill="#a8bed0" font-size="10">0</text><text x="${w-right}" y="${h-2}" text-anchor="end" fill="#a8bed0" font-size="10">${max}${id==='closingChart'?' km/h':''}</text>`;
+      markup+=`<rect x="${left}" y="${top}" width="${plotW}" height="${plotH}" fill="transparent" pointer-events="all"/>`;
+      svg.innerHTML=markup;
+      $(id==='distanceChart'?'distanceLevels':'closingLevels').innerHTML=values.map((val,i)=>`<div class="level" style="border-top:2px solid ${palette[i]}" title="${chartHelp[id][i]}">${labels[i]}<b>${fmt(val,2)}</b></div>`).join('');
+    }
+    function renderRules(m){
+      const root=$('rules');let html='<div></div>'+C.map(t=>`<div class="head">${t}</div>`).join('');
+      for(let i=0;i<3;i++){
+        html+=`<div class="rowlabel">${D[i]}</div>`;
+        for(let j=0;j<3;j++){
+          const r=m.fires[i*3+j],active=r.alpha>.025;
+          html+=`<div class="rule-cell${active?' active':''}" aria-label="Distancia ${D[i]}, aproximación ${C[j]}: ${r.label}, activación ${fmt(r.alpha,2)}"><strong>${r.label}</strong><small>μ = ${fmt(r.alpha,2)}</small><div class="fill" style="width:${Math.round(r.alpha*100)}%"></div></div>`;
+        }
+      }
+      root.innerHTML=html;
+      const active=m.fires.filter(r=>r.alpha>.025).sort((a,b)=>b.alpha-a.alpha).slice(0,2);
+      $('ruleSummary').innerHTML=active.length?`Más activas: ${active.map(r=>`<b>${D[r.i]} + ${C[r.j]} → ${r.label}</b> (${fmt(r.alpha,2)})`).join(' · ')}`:'Ninguna regla activa.';
+    }
+    function update(){
+      updateControls();model=calculate({...state,lane:inputs.lane.checked});const m=model;
+      $('hudDistance').textContent=fmt(state.distance,1)+' m';$('hudSpeed').textContent=fmt(state.speed,1)+' km/h';$('hudRelative').textContent=signed(m.relative)+' km/h';
+      $('safeGap').textContent=fmt(m.safe,1)+' m';$('gapRatio').textContent=fmt(m.ratio,2);$('ttc').textContent=Number.isFinite(m.ttc)?fmt(m.ttc,1)+' s':'∞';
+      $('distanceChartValue').textContent=fmt(m.ratio,2);$('closingChartValue').textContent=fmt(m.closing,1)+' km/h';
+      drawMembership('distanceChart',2.7,m.ratio,[near,medium,far],D,m.dm,[colors.near,colors.mid,colors.far]);
+      drawMembership('closingChart',60,m.closing,[slow,moderate,rapid],C,m.cm,[colors.slow,colors.moderate,colors.rapid]);
+      renderRules(m);
+      $('brakeNumber').innerHTML=`${Math.round(m.brake*100)} % <span>de 100 %</span>`;$('brakeFill').style.width=(m.brake*100)+'%';
+      let action=m.emergency?'FRENADA DE EMERGENCIA':m.brake>=.72?'FRENADA FUERTE':m.brake>=.34?'FRENADA MODERADA':m.brake>=.06?'LEVANTAR ACELERADOR':'MANTENER VELOCIDAD';
+      $('brakeAction').textContent=action;$('emergency').classList.toggle('show',m.emergency);
+      $('calc').innerHTML=`Salida difusa = Σ(activación × orden) / Σ activaciones<br><code>${fmt(m.numerator,2)} / ${fmt(m.denominator,2)} = ${Math.round(m.fuzzy*100)} %</code>${m.emergency?' · prioridad de emergencia → 100 %':''}`;
+      if(m.canSteer){$('steerAction').textContent='Dirección: proponer cambio a la izquierda';$('lateralDetail').textContent=`Carril libre · aceleración lateral estimada ${fmt(m.lateralAccel,1)} m/s² < límite didáctico 2,2 m/s².`}
+      else if(!inputs.lane.checked){$('steerAction').textContent='Dirección: mantener carril';$('lateralDetail').textContent='El carril izquierdo está ocupado; se prioriza la frenada.'}
+      else if(m.emergency){$('steerAction').textContent='Dirección: mantener carril';$('lateralDetail').textContent='Tiempo crítico: la frenada de emergencia tiene prioridad.'}
+      else if(m.lateralAccel>2.2&&m.brake>=.63){$('steerAction').textContent='Dirección: mantener carril';$('lateralDetail').textContent=`Cambio lateral descartado: ${fmt(m.lateralAccel,1)} m/s² supera el límite didáctico.`}
+      else{$('steerAction').textContent='Dirección: mantener carril';$('lateralDetail').textContent='No hace falta una maniobra lateral en este estado.'}
+      $('sceneStatus').textContent=state.hit?'ALCANCE DEL OBSTÁCULO':m.emergency?'FRENADA DE EMERGENCIA':state.running?'SIMULACIÓN EN MARCHA':'ESCENARIO EN PAUSA';
+      $('sceneStatus').style.color=state.hit||m.emergency?'var(--red)':m.brake>.65?'var(--amber)':'var(--cyan)';
+      $('sceneSub').textContent=state.hit?'Reinicia o cambia el escenario':m.canSteer?'Trayectoria lateral sugerida':'Sensor frontal y control longitudinal';
+      drawScene();
+    }
+
+    // Renderizador ligero de geometría 3D con proyección perspectiva. No depende de CDNs.
+    const canvas=$('scene'),ctx=canvas.getContext('2d',{alpha:false});let W=1,H=1,dpr=1;
+    function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=Math.max(1,r.width);H=Math.max(1,r.height);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);drawScene()}
+    const V=(x,y,z)=>[x,y,z],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{const n=Math.hypot(...a)||1;return a.map(q=>q/n)};
+    let cam,items,sceneLayer=0;
+    function setupCamera(){
+      const target=V(0,0,clamp(state.distance*.37,9,27));const radius=47/state.zoom;
+      const pos=V(Math.sin(state.azimuth)*radius*Math.cos(state.elevation),Math.sin(state.elevation)*radius+7,target[2]-Math.cos(state.azimuth)*radius*Math.cos(state.elevation));
+      const forward=norm(sub(target,pos)),right=norm(cross(V(0,1,0),forward)),up=norm(cross(forward,right));cam={pos,forward,right,up,focal:Math.min(W*1.07,H*1.6)};
+    }
+    function project(p){const a=sub(p,cam.pos),depth=dot(a,cam.forward);if(depth<1)return null;const factor=cam.focal/depth;return {x:W*.5+dot(a,cam.right)*factor,y:H*.55-dot(a,cam.up)*factor,d:depth}}
+    function face(points,color,alpha=1,stroke=null){const pp=points.map(project);if(pp.some(x=>!x))return;items.push({pp,color,alpha,stroke,layer:sceneLayer,depth:pp.reduce((s,p)=>s+p.d,0)/pp.length})}
+    function line(points,color,width=1,alpha=1,dash=[]){const pp=points.map(project);if(pp.some(x=>!x))return;items.push({pp,color,width,alpha,dash,layer:sceneLayer,depth:pp.reduce((s,p)=>s+p.d,0)/pp.length,line:true})}
+    function box(cx,baseY,cz,sx,sy,sz,pal){
+      const x0=cx-sx/2,x1=cx+sx/2,y0=baseY,y1=baseY+sy,z0=cz-sz/2,z1=cz+sz/2;
+      const p=[V(x0,y0,z0),V(x1,y0,z0),V(x1,y0,z1),V(x0,y0,z1),V(x0,y1,z0),V(x1,y1,z0),V(x1,y1,z1),V(x0,y1,z1)];
+      face([p[0],p[1],p[5],p[4]],pal.rear);face([p[1],p[2],p[6],p[5]],pal.side);face([p[2],p[3],p[7],p[6]],pal.front);face([p[3],p[0],p[4],p[7]],pal.side);face([p[4],p[5],p[6],p[7]],pal.top);
+    }
+    function vehicle(x,z,kind){
+      const own=kind==='own';const pal=own?{rear:'#168ec4',side:'#177fb0',front:'#289bc9',top:'#3bc1e8'}:{rear:'#d56e32',side:'#bf5727',front:'#e7833c',top:'#ffa95c'};
+      face([V(x-1.02,.045,z-2.35),V(x+1.02,.045,z-2.35),V(x+1.02,.045,z+2.35),V(x-1.02,.045,z+2.35)],own?'#071a2b':'#2b1a15',.42);
+      for(const sx of [-.9,.9])for(const sz of [-1.28,1.28])box(x+sx,.08,z+sz,.28,.55,.65,{rear:'#0b121a',front:'#111b25',side:'#0b121a',top:'#273541'});
+      box(x,.27,z,1.9,.68,4.15,pal);
+      box(x,.94,z-.05,1.48,.7,2.05,{rear:'#153b53',front:'#36718d',side:'#193b52',top:own?'#4fcae4':'#eb9d65'});
+      face([V(x-.67,1.55,z-.99),V(x+.67,1.55,z-.99),V(x+.78,.96,z-1.10),V(x-.78,.96,z-1.10)],'#77a5b9',.76);
+      face([V(x-.73,1.58,z+.88),V(x+.73,1.58,z+.88),V(x+.78,.96,z+1.11),V(x-.78,.96,z+1.11)],'#8bc1d0',.75);
+      for(const sx of [-.64,.64]){
+        face([V(x+sx-.17,.52,z-2.095),V(x+sx+.17,.52,z-2.095),V(x+sx+.17,.7,z-2.095),V(x+sx-.17,.7,z-2.095)],own?'#ff6869':'#ffa978');
+        face([V(x+sx-.18,.51,z+2.095),V(x+sx+.18,.51,z+2.095),V(x+sx+.18,.72,z+2.095),V(x+sx-.18,.72,z+2.095)],'#e6f4df');
+      }
+    }
+    function roundedRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+    function drawScene(){
+      if(!ctx||!W||!H)return;
+      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#17364d');sky.addColorStop(.58,'#183649');sky.addColorStop(1,'#0a1725');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+      setupCamera();items=[];sceneLayer=0;
+      const maxZ=Math.max(145,state.distance+45),minZ=-33;
+      face([V(-35,-.16,minZ),V(35,-.16,minZ),V(35,-.16,maxZ),V(-35,-.16,maxZ)],'#173846');
+      face([V(-6.1,-.08,minZ),V(6.1,-.08,minZ),V(6.1,-.08,maxZ),V(-6.1,-.08,maxZ)],'#71828b');
+      face([V(-5.7,-.045,minZ),V(5.7,-.045,minZ),V(5.7,-.045,maxZ),V(-5.7,-.045,maxZ)],'#273844');
+      sceneLayer=1;
+      for(const x of [-5.48,5.48])face([V(x-.045,.008,minZ),V(x+.045,.008,minZ),V(x+.045,.008,maxZ),V(x-.045,.008,maxZ)],'#9caeb3');
+      for(let z=Math.floor(minZ/9)*9-(state.phase%9);z<maxZ;z+=9)for(const x of [-1.8,1.8])face([V(x-.047,.018,z),V(x+.047,.018,z),V(x+.047,.018,z+4.2),V(x-.047,.018,z+4.2)],'#a0b5b9',.8);
+      const safetyEnd=clamp(model?model.safe:44,0,maxZ);
+      face([V(-1.64,.026,2.2),V(1.64,.026,2.2),V(1.64,.026,safetyEnd),V(-1.64,.026,safetyEnd)],model&&model.emergency?'#fb6966':'#58c4de',.105);
+      sceneLayer=2;
+      for(let z=-(state.phase%12);z<maxZ;z+=12){for(const x of [-7.4,7.4]){
+        box(x,0,z,.12,2.1,.12,{rear:'#465d65',front:'#465d65',side:'#354f57',top:'#74919b'});
+        box(x,2.05,z,.62,.13,.4,{rear:'#b7cfcc',front:'#b7cfcc',side:'#98aeae',top:'#dce7d4'});
+      }}
+      const leadZ=clamp(state.distance,2,maxZ-8);
+      if(model){
+        const beamColor=model.emergency?'#ff7272':model.brake>.55?'#ffc36d':'#67dce9';
+        for(const sx of [-.85,0,.85])line([V(sx*.38,1.15,1.8),V(sx*.8,.6,leadZ-2.3)],beamColor,sx===0?2:1.3,sx===0?.75:.4,[5,6]);
+        for(let r=3;r<Math.min(state.distance,48);r+=7){const points=[];for(let a=-.72;a<=.72;a+=.08)points.push(V(Math.sin(a)*r,.04,1+Math.cos(a)*r));line(points,'#55d6e6',1,.18)}
+        line([V(2.5,.1,2.4),V(2.5,.1,Math.max(2.5,leadZ-2.3))],beamColor,2,.85);
+        for(const zz of [2.4,Math.max(2.5,leadZ-2.3)])line([V(2.24,.1,zz),V(2.76,.1,zz)],beamColor,2,.9);
+        if(model.canSteer){const pts=[];for(let t=0;t<=1;t+=.08)pts.push(V(-3.6*(t*t*(3-2*t)),.06,2.4+t*20));line(pts,'#91e6ac',3,.9,[7,5])}
+      }
+      vehicle(0,leadZ,'lead');vehicle(0,0,'own');
+      items.sort((a,b)=>a.layer-b.layer||b.depth-a.depth);
+      for(const item of items){ctx.globalAlpha=item.alpha;ctx.beginPath();ctx.moveTo(item.pp[0].x,item.pp[0].y);for(let k=1;k<item.pp.length;k++)ctx.lineTo(item.pp[k].x,item.pp[k].y);
+        if(item.line){ctx.strokeStyle=item.color;ctx.lineWidth=item.width;ctx.setLineDash(item.dash);ctx.stroke();ctx.setLineDash([])}else{ctx.closePath();ctx.fillStyle=item.color;ctx.fill();if(item.stroke){ctx.strokeStyle=item.stroke;ctx.stroke()}}
+      }
+      ctx.globalAlpha=1;
+      const lp=project(V(0,2.1,leadZ));if(lp&&lp.x>-70&&lp.x<W+70&&lp.y>-30&&lp.y<H+40){
+        const lx=clamp(lp.x-45,8,W-103),ly=clamp(lp.y-40,70,H-100);roundedRect(lx,ly,95,23,6);ctx.fillStyle='#071827db';ctx.fill();ctx.fillStyle='#ffe0b7';ctx.font='700 12px system-ui';ctx.fillText('OBSTÁCULO',lx+8,ly+16)
+      }
+      const ep=project(V(0,1.9,0));if(ep){const ex=clamp(ep.x-32,10,W-95),ey=clamp(ep.y+8,82,H-86);roundedRect(ex,ey,89,23,6);ctx.fillStyle='#071827db';ctx.fill();ctx.fillStyle='#9bebf1';ctx.font='700 12px system-ui';ctx.fillText('TU COCHE',ex+9,ey+16)}
+      const dPoint=project(V(2.65,.15,Math.min(leadZ*.5,65)));if(dPoint){roundedRect(clamp(dPoint.x-29,10,W-80),clamp(dPoint.y-13,85,H-77),74,24,7);ctx.fillStyle='#0a2130ed';ctx.fill();ctx.fillStyle='#e8f8fc';ctx.font='700 12px system-ui';ctx.fillText(fmt(state.distance,1)+' m',clamp(dPoint.x-18,21,W-70),clamp(dPoint.y+3,101,H-61))}
+      if(state.hit){ctx.fillStyle='#7d20205c';ctx.fillRect(0,0,W,H)}
+    }
+    function step(t){
+      if(state.running){const dt=clamp((t-state.last)/1000,0,.06);state.last=t;const m=calculate({...state,lane:inputs.lane.checked});
+        const decel=m.emergency?8.5:Math.max(0,m.brake)*5.5;
+        const accel=m.brake<.06&&state.speed<+inputs.speed.value ? .32 : 0;
+        const previous=state.speed;state.speed=clamp(state.speed+(accel-decel)*dt*3.6,0,+inputs.speed.value);
+        state.distance+=(state.leadSpeed-(previous+state.speed)/2)*dt/3.6;
+        state.phase+=dt*state.speed/3.6;
+        if(state.distance<=2.2){state.distance=2.2;state.running=false;state.hit=true;$('play').textContent='▶ Repetir'}
+        if(state.speed<.05&&state.leadSpeed<.05){state.running=false;$('play').textContent='▶ Continuar'}
+        if(t-state.lastUi>=80||!state.running){update();state.lastUi=t}else{model=calculate({...state,lane:inputs.lane.checked});drawScene()}
+      }
+      requestAnimationFrame(step);
+    }
+    function chartPointerValue(id,e){
+      const rect=$(id).getBoundingClientRect(),max=id==='distanceChart'?2.7:60;
+      const svgX=(e.clientX-rect.left)*420/rect.width;
+      return clamp((svgX-7)/405*max,0,max);
+    }
+    function showChartTooltip(id,value,clientX){
+      const tip=$(id==='distanceChart'?'distanceTooltip':'closingTooltip');
+      const block=$(id==='distanceChart'?'distanceBlock':'closingBlock');
+      if(id==='distanceChart'){
+        const safe=4+1.8*(+inputs.speed.value)/3.6;
+        const metres=clamp(Math.round(value*safe),4,100),ratio=metres/safe;
+        tip.innerHTML=`<strong>Distancia propuesta: ${metres} m</strong><span>${fmt(ratio,2)} × distancia segura · cerca ${fmt(near(ratio),2)} · media ${fmt(medium(ratio),2)} · lejos ${fmt(far(ratio),2)}</span><small>Clic o arrastra para aplicar</small>`;
+      }else{
+        const closure=Math.min(Math.round(value),+inputs.speed.value);
+        tip.innerHTML=`<strong>Cierre propuesto: ${closure} km/h</strong><span>Relativa −${closure} km/h · lenta ${fmt(slow(closure),2)} · moderada ${fmt(moderate(closure),2)} · rápida ${fmt(rapid(closure),2)}</span><small>Clic o arrastra para aplicar</small>`;
+      }
+      tip.hidden=false;
+      const rect=block.getBoundingClientRect();tip.style.left=clamp(clientX-rect.left+12,4,Math.max(4,rect.width-245))+'px';
+    }
+    function applyChartValue(id,value){
+      if(id==='distanceChart'){
+        const safe=4+1.8*(+inputs.speed.value)/3.6;
+        inputs.distance.value=clamp(Math.round(value*safe),4,100);
+      }else inputs.relative.value=-Math.min(Math.round(value),+inputs.speed.value);
+      document.querySelectorAll('[data-preset]').forEach(b=>b.setAttribute('aria-pressed','false'));
+      reset();
+    }
+    for(const id of ['distanceChart','closingChart']){
+      const svg=$(id),tip=$(id==='distanceChart'?'distanceTooltip':'closingTooltip');let dragging=false;
+      svg.addEventListener('pointerdown',e=>{e.preventDefault();dragging=true;svg.setPointerCapture(e.pointerId);const value=chartPointerValue(id,e);applyChartValue(id,value);showChartTooltip(id,value,e.clientX)});
+      svg.addEventListener('pointermove',e=>{const value=chartPointerValue(id,e);if(dragging)applyChartValue(id,value);showChartTooltip(id,value,e.clientX)});
+      svg.addEventListener('pointerup',e=>{dragging=false;if(svg.hasPointerCapture(e.pointerId))svg.releasePointerCapture(e.pointerId)});
+      svg.addEventListener('pointercancel',()=>{dragging=false;tip.hidden=true});
+      svg.addEventListener('pointerleave',()=>{if(!dragging)tip.hidden=true});
+      svg.addEventListener('focus',()=>{const value=id==='distanceChart'?Math.min(model.ratio,2.7):Math.min(model.closing,60);const rect=svg.getBoundingClientRect();showChartTooltip(id,value,rect.left+rect.width/2)});
+      svg.addEventListener('blur',()=>tip.hidden=true);
+      svg.addEventListener('keydown',e=>{
+        if(!['ArrowLeft','ArrowRight','ArrowDown','ArrowUp','Home','End'].includes(e.key))return;
+        e.preventDefault();const distance=id==='distanceChart';const min=distance?4:0,max=distance?100:Math.min(60,+inputs.speed.value);
+        const current=distance?+inputs.distance.value:Math.max(0,-(+inputs.relative.value));
+        const next=e.key==='Home'?min:e.key==='End'?max:clamp(current+(['ArrowRight','ArrowUp'].includes(e.key)?1:-1)*(e.shiftKey?5:1),min,max);
+        if(distance)inputs.distance.value=next;else inputs.relative.value=-next;
+        document.querySelectorAll('[data-preset]').forEach(b=>b.setAttribute('aria-pressed','false'));reset();
+        const value=distance?model.ratio:model.closing;const rect=svg.getBoundingClientRect();showChartTooltip(id,value,rect.left+rect.width/2);
+      });
+    }
+    const manualTab=$('manualTab'),manualDrawer=$('manualDrawer'),manualBackdrop=$('manualBackdrop');
+    const manualTabs={use:$('manualUseTab'),check:$('manualCheckTab')},manualPanels={use:$('manualUse'),check:$('manualCheck')};
+    function selectManualTab(which,focus){
+      for(const key of ['use','check']){const selected=key===which;manualTabs[key].setAttribute('aria-selected',String(selected));manualTabs[key].tabIndex=selected?0:-1;manualPanels[key].hidden=!selected}
+      if(focus)manualTabs[which].focus();
+    }
+    function openManual(){manualDrawer.hidden=false;manualBackdrop.hidden=false;manualTab.setAttribute('aria-expanded','true');document.body.classList.add('manual-open');document.querySelector('main').inert=true;$('manualClose').focus()}
+    function closeManual(){manualDrawer.hidden=true;manualBackdrop.hidden=true;manualTab.setAttribute('aria-expanded','false');document.body.classList.remove('manual-open');document.querySelector('main').inert=false;manualTab.focus()}
+    manualTab.addEventListener('click',openManual);$('manualClose').addEventListener('click',closeManual);manualBackdrop.addEventListener('click',closeManual);
+    for(const key of ['use','check'])manualTabs[key].addEventListener('click',()=>selectManualTab(key,false));
+    for(const key of ['use','check'])manualTabs[key].addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();selectManualTab(e.key==='Home'||e.key==='ArrowLeft'?'use':'check',true)});
+    document.addEventListener('keydown',e=>{
+      if(manualDrawer.hidden)return;
+      if(e.key==='Escape'){e.preventDefault();closeManual();return}
+      if(e.key!=='Tab')return;
+      const focusable=[...manualDrawer.querySelectorAll('button,input,a[href]')].filter(el=>!el.closest('[hidden]')&&el.tabIndex>=0);
+      if(!focusable.length)return;
+      const first=focusable[0],last=focusable[focusable.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+    });
+    selectManualTab('use',false);
+    for(const el of [inputs.distance,inputs.speed,inputs.relative,inputs.lane])el.addEventListener('input',()=>{document.querySelectorAll('[data-preset]').forEach(b=>b.setAttribute('aria-pressed','false'));reset()});
+    document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>setScenario(b.dataset.preset)));
+    $('play').addEventListener('click',()=>{if(state.hit)reset();state.running=!state.running;state.last=performance.now();$('play').textContent=state.running?'Ⅱ Pausar':'▶ Continuar';update()});
+    $('reset').addEventListener('click',reset);
+    canvas.addEventListener('pointerdown',e=>{state.drag={x:e.clientX,y:e.clientY,a:state.azimuth,b:state.elevation};canvas.setPointerCapture(e.pointerId)});
+    canvas.addEventListener('pointermove',e=>{if(!state.drag)return;state.azimuth=clamp(state.drag.a+(e.clientX-state.drag.x)*.006,-1.25,1.25);state.elevation=clamp(state.drag.b+(e.clientY-state.drag.y)*.004,.24,1.14);drawScene()});
+    canvas.addEventListener('pointerup',()=>state.drag=null);canvas.addEventListener('pointercancel',()=>state.drag=null);
+    canvas.addEventListener('wheel',e=>{e.preventDefault();state.zoom=clamp(state.zoom*Math.exp(-e.deltaY*.001),.65,1.8);drawScene()},{passive:false});
+    new ResizeObserver(resize).observe(canvas);reset();requestAnimationFrame(step);
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Control difuso animado · Ventilador</title>
+  <style>
+    :root{--ink:#111318;--sub:#4e5661;--paper:#fff;--page:#f3f5f7;--line:#d5dbe1;--soft:#e8edf1;--orange:#ff7814;--red:#f43228;--purple:#7767d8;--blue:#428ac8;--green:#249c68;--shadow:0 16px 45px #152b4512}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page);color:var(--ink);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,svg:focus-visible{outline:3px solid #228abd;outline-offset:3px}strong{font-weight:800}.app{width:min(1680px,calc(100% - 36px));margin:0 auto;padding:30px 0 42px}.eyebrow{font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.12em}.eyebrow i{font-style:normal;color:var(--orange)}h1,h2,h3,p{margin-top:0}.top{display:flex;justify-content:space-between;align-items:end;gap:25px;margin-bottom:18px}.top h1{font-size:clamp(31px,3.4vw,52px);letter-spacing:-.055em;line-height:1.03;margin:7px 0 8px}.top p{color:var(--sub);max-width:820px;margin:0;font-size:15px}.top-badge{border:1px solid #c4d0d8;border-radius:99px;padding:8px 12px;font-size:12px;font-weight:750;white-space:nowrap;background:#fff}
+    .toolbar{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;box-shadow:var(--shadow)}.toolbar .help{color:var(--sub);font-size:12px}.toolbar-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.btn{border:1px solid #c6ced4;border-radius:9px;background:#fff;color:var(--ink);padding:8px 12px;font-weight:750;font-size:12px;min-height:38px}.btn:hover{background:#eef3f6}.btn.is-active{border-color:var(--orange);color:#ba3c0a;background:#fff3e8}.btn.play{background:var(--ink);color:#fff;border-color:var(--ink);min-width:138px}.btn.play:hover{background:#303640}.btn.play[aria-pressed=true]{background:#a52d16;border-color:#a52d16}
+    .main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px;min-width:0;box-shadow:var(--shadow)}.panel h2{font-size:clamp(22px,2.1vw,31px);letter-spacing:-.045em;line-height:1.1;margin:5px 0 6px}.panel .lead{color:var(--sub);font-size:13px;margin:0 0 17px}.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.chart-card{border:1px solid var(--line);border-radius:12px;padding:14px;background:linear-gradient(180deg,#fff,#fcfdfe);position:relative;min-width:0}.chart-card h3{font-size:13px;font-weight:850;text-transform:uppercase;margin:0 0 3px}.chart-card .caption{font-size:11px;color:var(--sub);margin-bottom:10px}.control-head{display:flex;justify-content:space-between;align-items:center;gap:7px;font-size:12px;font-weight:700}.control-head output{font-variant-numeric:tabular-nums;font-weight:850;font-size:17px;color:var(--orange)}.chart-card.humidity .control-head output{color:var(--red)}input[type=range]{width:100%;accent-color:var(--orange);cursor:pointer;margin:8px 0 0}.chart-card.humidity input[type=range]{accent-color:var(--red)}.chart{width:100%;height:174px;display:block;touch-action:none;cursor:crosshair;margin-top:6px}.chart-tooltip{position:absolute;z-index:3;top:110px;left:10px;background:#111b27ed;color:#fff;border-radius:8px;padding:8px 10px;max-width:min(225px,calc(100% - 20px));font-size:11px;line-height:1.4;pointer-events:none;box-shadow:0 10px 28px #0003}.chart-tooltip strong{display:block}.chart-tooltip small{display:block;color:#bfe7f4;margin-top:3px}.degree-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}.degree-list span{border-radius:6px;padding:4px 7px;background:#edf1f4;color:#45505b;font-size:10px}.degree-list b{color:#161b20;font-variant-numeric:tabular-nums}.degree-list .emphasis{background:#fff0df;color:#8b3508}.humidity .degree-list .emphasis{background:#ffeded;color:#9e261d}
+    .rules-panel .eyebrow i{color:var(--red)}.rule-inputs{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#f3f6f8;border:1px solid #dce3e8;border-radius:11px;padding:10px 12px;margin-bottom:13px}.input-pill{background:#fff;border:1px solid #d8dfe4;border-radius:8px;padding:6px 10px;min-width:116px;font-size:11px;color:var(--sub)}.input-pill strong{display:block;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.2}.rule-inputs p{margin:0;flex:1;min-width:190px;font-size:12px;color:var(--sub)}.rule-inputs b{color:var(--ink)}
+    .matrix-panel,.fan-box{border:1px solid var(--line);border-radius:12px;background:#fff;min-width:0}.matrix-panel{padding:12px}.module-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}.module-head h3{font-size:15px;margin:0}.module-head small{font-size:11px;color:var(--sub)}.matrix-scroll{overflow-x:auto}.rule-table{width:100%;border-spacing:5px;border-collapse:separate;table-layout:fixed}.rule-table th{font-size:11px;line-height:1.15;text-align:center;color:var(--sub);font-weight:750;padding:4px 1px}.rule-table th:first-child{width:76px}.rule-table th b{display:block;color:var(--ink);font-size:12px;font-variant-numeric:tabular-nums;margin-top:2px}.rule-table td{padding:0}.matrix-cell{min-height:87px;border:1px solid #d9e0e5;border-radius:9px;padding:7px;background:#f8fafb;display:flex;flex-direction:column;justify-content:space-between;transition:background .18s,border-color .18s,box-shadow .18s}.matrix-cell.active{background:#fff3e9;border-color:#f5a666;box-shadow:inset 3px 0 var(--orange)}.matrix-cell strong{font-size:12px;line-height:1.13}.matrix-cell small{font-size:10px;color:var(--sub)}.matrix-cell .alpha{font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}.matrix-meter{height:6px;background:#e5e9ed;border-radius:99px;overflow:hidden;margin-top:4px}.matrix-meter span{height:100%;background:var(--orange);width:0;display:block;transition:width .18s}.matrix-note{font-size:11px;color:var(--sub);margin:8px 2px 0}
+    .fan-box{text-align:center;padding:12px 13px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center}.fan-box h3{font-size:15px;margin:0 0 5px}.fan-graphic{position:relative;width:min(100%,235px);margin:auto}.fan-svg{width:100%;display:block}.rotor{transform-box:view-box;transform-origin:100px 94px;animation:fan-spin var(--spin,1.2s) linear infinite}@keyframes fan-spin{to{transform:rotate(360deg)}}.fan-halo{position:absolute;inset:15% 13% 23%;border:2px solid var(--orange);border-radius:50%;opacity:0;animation:halo 1.4s ease-out infinite;pointer-events:none}@keyframes halo{0%{transform:scale(.78);opacity:.3}100%{transform:scale(1.22);opacity:0}}.fan-value{font-size:clamp(48px,4.2vw,72px);font-weight:900;line-height:1;letter-spacing:-.06em;font-variant-numeric:tabular-nums}.fan-speed{font-size:18px;font-weight:850;text-transform:uppercase;color:#d64c17;margin:6px 0 4px}.fan-count{font-size:12px;color:var(--sub)}.fan-scale{width:100%;height:13px;background:linear-gradient(90deg,#bfc9d1 0 1%,#70aacc 1% 34.9%,#f4ad4b 35% 74.9%,#ef653b 75% 100%);border-radius:99px;position:relative;margin-top:17px}.fan-marker{position:absolute;top:-6px;width:4px;height:25px;background:#15191e;border:1px solid #fff;border-radius:3px;transform:translateX(-50%);transition:left .18s}.fan-scale-labels{width:100%;display:flex;justify-content:space-between;font-size:10px;color:var(--sub);margin-top:8px}
+    .calc-panel{margin-top:13px;border:1px solid #d4dce2;border-radius:12px;overflow:hidden}.calc-title{background:#eef3f6;padding:10px 13px;font-size:14px;font-weight:850}.active-rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:11px 12px}.active-rule{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;border:1px solid #e0e5e8;border-radius:8px;padding:8px 10px;font-size:12px}.active-rule strong{font-size:12px}.active-rule .weight{font-weight:800;color:#c24914;font-variant-numeric:tabular-nums;white-space:nowrap}.active-rule small{grid-column:1/-1;color:var(--sub);font-size:11px}.calc-final{background:#15191e;color:#fff;padding:13px 15px}.calc-final .step{color:#ffbf77;font-size:12px;font-weight:850;text-transform:uppercase}.calc-final p{font-size:12px;color:#d9e1e5;margin:4px 0 8px}.weighted-formula{font:600 13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere;color:#fff}.weighted-result{font-size:22px;font-weight:900;color:#ffba73;margin-top:7px}.footer{font-size:11px;color:#69727d;margin-top:14px;line-height:1.5}
+    body{font-size:15px}.app{width:min(1720px,calc(100% - 32px))}.main-grid{grid-template-columns:minmax(290px,.95fr) minmax(405px,1.25fr) minmax(310px,1fr);gap:14px;align-items:start}.panel{padding:18px}.panel h2{font-size:clamp(21px,1.8vw,28px)}.chart-grid{grid-template-columns:1fr}.chart{height:200px}.chart-card h3{font-size:14px}.chart-card .caption{font-size:12px}.control-head{font-size:14px}.control-head output{font-size:19px}.degree-list span{font-size:12px;padding:5px 8px}.degree-list .low{background:#eaf3fb;color:#246796}.degree-list .mid{background:#fff3dd;color:#8e5a0b}.degree-list .high{background:#fff0df;color:#8b3508}.humidity .degree-list .high{background:#ffeded;color:#9e261d}
+    .panel .lead{font-size:14px}.toolbar .help{font-size:14px}.btn{font-size:13px}.rule-inputs p{font-size:13px}.rule-table th{font-size:12px}.rule-table th:first-child{width:68px}.rule-table th b{font-size:14px}.matrix-cell{min-height:98px;padding:8px}.matrix-cell strong{font-size:14px}.matrix-cell small{font-size:11px}.matrix-cell .alpha{font-size:13px}.fan-graphic{width:min(100%,205px)}.fan-value{font-size:clamp(48px,4vw,65px)}.active-rules{grid-template-columns:1fr}.active-rule{display:block}.active-rule,.active-rule strong{font-size:13px}.active-rule .weight{display:block;margin-top:4px}.active-rule small{display:block;font-size:11px;margin-top:3px}.weighted-formula{font-size:14px}.weighted-result{font-size:25px}.footer{font-size:12px}
+    .decision-summary{background:#fff4e8;color:#663614;border-bottom:1px solid #f0dcc8;padding:11px 13px;font-size:14px;line-height:1.45;font-weight:650}.and-callout{background:#fff5e9;border:1px solid #f1d5b7;border-radius:8px;padding:9px 11px;font-size:14px;line-height:1.4;color:#613b1c;margin:0 0 9px}
+    .output-panel .fan-box{display:grid;grid-template-columns:minmax(110px,140px) minmax(0,1fr);gap:2px 12px;align-items:center;justify-content:initial;text-align:left;padding:12px}.output-panel .fan-box h3{grid-column:1/-1;text-align:center;margin:0 0 4px}.output-panel .fan-graphic{grid-column:1;grid-row:2/5;width:100%;margin:0}.output-panel .fan-value{grid-column:2;grid-row:2;align-self:end}.output-panel .fan-speed{grid-column:2;grid-row:3;margin:0}.output-panel .fan-count{grid-column:2;grid-row:4;align-self:start}.output-panel .fan-scale,.output-panel .fan-scale-labels{grid-column:1/-1}
+    .active-rule{padding:10px}.active-rule strong{display:block;margin-bottom:8px}.rule-calc-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:3px 8px;padding:5px 8px;border-radius:6px;background:#f2f5f7;margin-top:4px}.rule-calc-row span{font-size:11px;font-weight:750;color:#56616b}.rule-calc-row b{font-size:13px;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}.rule-calc-row.contribution{background:#fff0e2}.rule-calc-row.contribution b{color:#b9400b}
+    [hidden]{display:none!important}
+    @media(max-width:1100px){.main-grid{grid-template-columns:1fr}.chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.active-rules{grid-template-columns:repeat(2,minmax(0,1fr))}.output-panel .fan-box{max-width:500px;margin-inline:auto}.fan-graphic{width:min(100%,235px)}}
+    @media(max-width:800px){.app{width:min(calc(100% - 22px),650px);padding-top:20px}.top{display:block}.top-badge{display:inline-block;margin-top:12px}.chart-grid{grid-template-columns:1fr}.active-rules{grid-template-columns:1fr}.fan-graphic{max-width:190px}.panel{padding:16px}}
+    @media(max-width:520px){.rule-table{min-width:420px}}
+    @media(max-width:480px){.toolbar-actions{width:100%}.toolbar-actions .btn{flex:1}.top h1{font-size:30px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top"><div><div class="eyebrow">Lógica difusa · laboratorio animado</div><h1>Del sensor al ventilador</h1><p>Cambia temperatura y humedad para seguir los grados de pertenencia, las reglas activas y el cálculo de la velocidad final.</p></div><div class="top-badge">Ejemplo inicial: 32 °C · 70 %</div></header>
+    <div class="toolbar"><span class="help">Mueve los controles o inicia una oscilación automática para observar el sistema en marcha.</span><div class="toolbar-actions"><button class="btn is-active" type="button" data-preset="original" aria-pressed="true">32 °C · 70 %</button><button class="btn" type="button" data-preset="seco" aria-pressed="false">Calor seco</button><button class="btn" type="button" data-preset="templado" aria-pressed="false">Templado</button><button class="btn" type="button" data-preset="frio" aria-pressed="false">Frío húmedo</button><button class="btn play" type="button" id="animate" aria-pressed="false">▶ Animar entradas</button></div></div>
+    <div class="main-grid">
+      <section class="panel" aria-labelledby="setsTitle"><div class="eyebrow"><i>01</i> · entradas</div><h2 id="setsTitle">Conjuntos difusos</h2><p class="lead">Temperatura y humedad se evalúan por separado. Cada una genera grados entre 0 y 1 que usarán las reglas.</p>
+        <div class="chart-grid">
+          <div class="chart-card" id="tempCard"><h3>Temperatura: tres conjuntos</h3><div class="caption">Baja, templada y alta pueden coincidir parcialmente.</div><div class="control-head"><label for="tempRange">Temperatura</label><output id="tempValue">32 °C</output></div><input id="tempRange" type="range" min="0" max="45" value="32" step="1"><svg id="tempChart" class="chart" viewBox="0 0 360 200" preserveAspectRatio="none" role="slider" tabindex="0" aria-label="Ajustar temperatura desde la gráfica" aria-valuemin="0" aria-valuemax="45" aria-valuenow="32"></svg><div id="tempDegrees" class="degree-list"></div><div id="tempTip" class="chart-tooltip" role="tooltip" hidden></div></div>
+          <div class="chart-card humidity" id="humidityCard"><h3>Humedad: tres conjuntos</h3><div class="caption">Baja, media y alta pueden coincidir parcialmente.</div><div class="control-head"><label for="humidityRange">Humedad</label><output id="humidityValue">70 %</output></div><input id="humidityRange" type="range" min="0" max="100" value="70" step="1"><svg id="humidityChart" class="chart" viewBox="0 0 360 200" preserveAspectRatio="none" role="slider" tabindex="0" aria-label="Ajustar humedad desde la gráfica" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70"></svg><div id="humidityDegrees" class="degree-list"></div><div id="humidityTip" class="chart-tooltip" role="tooltip" hidden></div></div>
+        </div>
+      </section>
+      <section class="panel rules-panel" aria-labelledby="rulesTitle"><div class="eyebrow"><i>02</i> · inferencia</div><h2 id="rulesTitle">Matriz de nueve reglas</h2><p class="lead">Cada celda propone una velocidad. Varias pueden activarse a la vez.</p>
+        <div class="rule-inputs"><div class="input-pill">Temperatura medida<strong id="sensorTemp">32 °C</strong></div><div class="input-pill">Humedad medida<strong id="sensorHumidity">70 %</strong></div><p>En cada celda: <b>SI</b> temperatura es la fila <b>Y</b> humedad es la columna, <b>ENTONCES</b> aplicar la velocidad indicada.</p></div>
+          <div class="matrix-panel"><div class="module-head"><h3>Reglas SI–ENTONCES</h3></div><p class="and-callout"><strong>Cómo se aplica «Y»:</strong> cada regla toma el menor de los grados de su fila y columna. Ese valor es su fuerza.</p><div class="matrix-scroll"><table id="ruleMatrix" class="rule-table" aria-label="Nueve reglas de temperatura, humedad y velocidad del ventilador"></table></div><p class="matrix-note">Las celdas iluminadas aportan al resultado. Un 0,00 indica que esa regla no se activa.</p></div>
+      </section>
+      <section class="panel output-panel" aria-labelledby="outputTitle"><div class="eyebrow"><i>03</i> · salida</div><h2 id="outputTitle">Ventilador y cálculo</h2><p class="lead">Las reglas activas se combinan para obtener una velocidad concreta.</p>
+        <div class="fan-box"><h3>Velocidad final</h3><div class="fan-graphic"><div class="fan-halo" id="fanHalo"></div><svg class="fan-svg" viewBox="0 0 200 205" role="img" aria-label="Ventilador animado cuya velocidad corresponde a la salida difusa"><circle cx="100" cy="94" r="77" fill="#fff" stroke="#15191e" stroke-width="4"/><g class="rotor" id="rotor"><path d="M103 87 C92 66 91 35 105 31 C133 25 140 59 112 94 Z" fill="#111318"/><path d="M103 87 C92 66 91 35 105 31 C133 25 140 59 112 94 Z" fill="#111318" transform="rotate(120 100 94)"/><path d="M103 87 C92 66 91 35 105 31 C133 25 140 59 112 94 Z" fill="#111318" transform="rotate(240 100 94)"/></g><circle cx="100" cy="94" r="15" fill="#fff"/><circle cx="100" cy="94" r="11" fill="#111318"/><path d="M100 172 V188 M65 189 H135 Q140 189 140 194 V198 H60 V194 Q60 189 65 189Z" fill="#fff" stroke="#15191e" stroke-width="4" stroke-linejoin="round"/></svg></div><div class="fan-value" id="fanValue">81 %</div><div class="fan-speed" id="fanSpeed">Rápido</div><div class="fan-count" id="activeCount">4 reglas activas</div><div class="fan-scale"><span class="fan-marker" id="fanMarker"></span></div><div class="fan-scale-labels"><span>0 · apagado</span><span>35 · moderado</span><span>75 · rápido</span><span>100</span></div></div>
+        <div class="calc-panel"><div class="calc-title">Cómo se obtiene esa velocidad</div><div class="decision-summary" id="decisionSummary"></div><div class="active-rules" id="activeRules"></div><div class="calc-final"><div class="step">Promedio ponderado</div><p>Cada regla aporta su fuerza × velocidad propuesta. Se divide la suma de aportes entre la suma de fuerzas. Los grados se muestran redondeados; el cálculo conserva toda la precisión.</p><div class="weighted-formula" id="weightedFormula"></div><div class="weighted-result" id="weightedResult"></div></div></div>
+      </section>
+    </div>
+    <footer class="footer">Modelo educativo autocontenido. Los conjuntos, las nueve reglas y las velocidades propuestas son ilustrativos; no representan un dispositivo físico ni un controlador validado.</footer>
+  </main>
+  <script>
+  (()=>{
+    'use strict';
+    const $=id=>document.getElementById(id);
+    const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+    const tri=(x,a,b,c)=>x<=a||x>=c?0:x===b?1:x<b?(x-a)/(b-a):(c-x)/(c-b);
+    const fmt=(x,n=2)=>Number(x).toLocaleString('es-ES',{minimumFractionDigits:n,maximumFractionDigits:n});
+    const highTemp=t=>clamp((t-20)/15,0,1);
+    const mildTemp=t=>tri(t,15,25,35);
+    const lowTemp=t=>t<=12?1:clamp((25-t)/13,0,1);
+    const highHumidity=h=>clamp((h-40)/50,0,1);
+    const midHumidity=h=>tri(h,30,55,80);
+    const lowHumidity=h=>h<=30?1:clamp((50-h)/20,0,1);
+    const tempNames=['baja','templada','alta'],humidityNames=['baja','media','alta'];
+    const ruleSpeeds=[[0,20,30],[35,55,65],[70,85,100]];
+    const speedName=v=>v===0?'Apagado':v<35?'Lento':v<75?'Moderado':'Rápido';
+    const presets={original:{t:32,h:70},seco:{t:32,h:22},templado:{t:25,h:55},frio:{t:10,h:80}};
+    const state={t:32,h:70,playing:false,clock:0,last:0,lastRender:0,baseT:32,baseH:70};
+    function compute(){
+      const T=[lowTemp(state.t),mildTemp(state.t),highTemp(state.t)],H=[lowHumidity(state.h),midHumidity(state.h),highHumidity(state.h)];
+      const rules=[];let total=0,numerator=0;
+      for(let i=0;i<3;i++)for(let j=0;j<3;j++){
+        const alpha=Math.min(T[i],H[j]),speed=ruleSpeeds[i][j];
+        rules.push({i,j,alpha,speed,contribution:alpha*speed});total+=alpha;numerator+=alpha*speed;
+      }
+      const output=numerator/total;
+      return {T,H,rules,total,numerator,output};
+    }
+    function buildRuleTable(){
+      let html='<thead><tr><th scope="col">Temperatura ↓<br>Humedad →</th>';
+      for(let j=0;j<3;j++)html+=`<th scope="col">${humidityNames[j]}<b id="hDegree${j}">0,00</b></th>`;
+      html+='</tr></thead><tbody>';
+      for(let i=0;i<3;i++){
+        html+=`<tr><th scope="row">${tempNames[i]}<b id="tDegree${i}">0,00</b></th>`;
+        for(let j=0;j<3;j++){
+          const speed=ruleSpeeds[i][j];
+          html+=`<td><div class="matrix-cell" id="cell${i}${j}" title="SI temperatura ${tempNames[i]} Y humedad ${humidityNames[j]}, ENTONCES ${speedName(speed).toLowerCase()} (${speed} %)"><strong>${speedName(speed)}</strong><small>${speed} % propuesto</small><div><span class="alpha" id="alpha${i}${j}">μ = 0,00</span><div class="matrix-meter"><span id="meter${i}${j}"></span></div></div></div></td>`;
+        }
+        html+='</tr>';
+      }
+      $('ruleMatrix').innerHTML=html+'</tbody>';
+    }
+    function chart(id,max,value,curves,label,unit){
+      const svg=$(id),x0=30,x1=345,y0=155,y1=25,px=v=>x0+(v/max)*(x1-x0),py=v=>y0-v*(y0-y1);
+      let html=`<g stroke="#e0e5e9" stroke-width="1">`;
+      for(let i=0;i<=5;i++)html+=`<line x1="${x0}" y1="${py(i/5)}" x2="${x1}" y2="${py(i/5)}" stroke-dasharray="3 5"/>`;
+      html+=`</g><line x1="${x0}" y1="${y0}" x2="${x1+5}" y2="${y0}" stroke="#262b30" stroke-width="2"/><line x1="${x0}" y1="${y0}" x2="${x0}" y2="${y1-7}" stroke="#262b30" stroke-width="2"/><text x="${x0-10}" y="${y0+4}" text-anchor="end" font-size="11" fill="#3e4750">0</text><text x="${x0-10}" y="${y1+4}" text-anchor="end" font-size="11" fill="#3e4750">1</text>`;
+      for(const curve of curves){let d='';for(let i=0;i<=120;i++){const v=max*i/120;d+=(i?'L':'M')+px(v).toFixed(1)+','+py(curve.fn(v)).toFixed(1)}html+=`<path d="${d}" fill="none" stroke="${curve.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`}
+      html+=`<line x1="${px(value)}" y1="${y1-6}" x2="${px(value)}" y2="${y0}" stroke="#303840" stroke-width="2" stroke-dasharray="5 5"/>`;
+      for(const curve of curves)html+=`<circle cx="${px(value)}" cy="${py(curve.fn(value))}" r="6" fill="${curve.color}" stroke="#fff" stroke-width="2"/>`;
+      html+=`<text x="${x0}" y="182" font-size="11" fill="#4d565e">0</text><text x="${x1}" y="182" text-anchor="end" font-size="11" fill="#4d565e">${max}</text><text x="${x1}" y="198" text-anchor="end" font-size="11" font-weight="700" fill="#20252a">${label} (${unit})</text><rect x="${x0}" y="${y1-7}" width="${x1-x0}" height="${y0-y1+10}" fill="transparent" pointer-events="all"/>`;
+      svg.innerHTML=html;svg.setAttribute('aria-valuenow',String(value));svg.setAttribute('aria-valuetext',`${value} ${unit}; `+curves.map(curve=>`${curve.name} ${fmt(curve.fn(value))}`).join('; '));
+    }
+    function render(){
+      const m=compute(),highT=fmt(m.T[2]),highH=fmt(m.H[2]);
+      $('tempRange').value=state.t;$('humidityRange').value=state.h;
+      $('tempValue').textContent=state.t+' °C';$('humidityValue').textContent=state.h+' %';$('sensorTemp').textContent=state.t+' °C';$('sensorHumidity').textContent=state.h+' %';
+      chart('tempChart',45,state.t,[{name:'baja',fn:lowTemp,color:'#428ac8'},{name:'templada',fn:mildTemp,color:'#d69218'},{name:'alta',fn:highTemp,color:'#ff7814'}],'temperatura','°C');
+      chart('humidityChart',100,state.h,[{name:'baja',fn:lowHumidity,color:'#428ac8'},{name:'media',fn:midHumidity,color:'#d69218'},{name:'alta',fn:highHumidity,color:'#f43228'}],'humedad','%');
+      $('tempDegrees').innerHTML=`<span class="low">baja <b>${fmt(m.T[0])}</b></span><span class="mid">templada <b>${fmt(m.T[1])}</b></span><span class="high">alta <b>${highT}</b></span>`;
+      $('humidityDegrees').innerHTML=`<span class="low">baja <b>${fmt(m.H[0])}</b></span><span class="mid">media <b>${fmt(m.H[1])}</b></span><span class="high">alta <b>${highH}</b></span>`;
+      for(let i=0;i<3;i++)$('tDegree'+i).textContent=fmt(m.T[i]);
+      for(let j=0;j<3;j++)$('hDegree'+j).textContent=fmt(m.H[j]);
+      for(const rule of m.rules){
+        const key=rule.i+''+rule.j;
+        $('cell'+key).classList.toggle('active',rule.alpha>.00001);
+        $('alpha'+key).textContent='μ = '+fmt(rule.alpha);
+        $('meter'+key).style.width=(rule.alpha*100)+'%';
+      }
+      const active=m.rules.filter(rule=>rule.alpha>.00001).sort((a,b)=>b.alpha-a.alpha);
+      $('activeCount').textContent=active.length+' '+(active.length===1?'regla activa':'reglas activas');
+      const dominant=active[0];
+      $('decisionSummary').textContent=`Una de las reglas con mayor fuerza propone ${dominant.speed} % (temperatura ${tempNames[dominant.i]} y humedad ${humidityNames[dominant.j]}; fuerza ${fmt(dominant.alpha)}). Las demás propuestas ajustan la media.`;
+      $('activeRules').innerHTML=active.map(rule=>`<div class="active-rule"><strong>Temperatura ${tempNames[rule.i]} + humedad ${humidityNames[rule.j]} → ${speedName(rule.speed).toLowerCase()} (${rule.speed} %)</strong><div class="rule-calc-row"><span>Fuerza con «Y»</span><b>mín(${fmt(m.T[rule.i])}; ${fmt(m.H[rule.j])}) = ${fmt(rule.alpha)}</b></div><div class="rule-calc-row contribution"><span>Aporte al numerador</span><b>${fmt(rule.alpha)} × ${rule.speed} % ≈ ${fmt(rule.contribution,1)} %</b></div></div>`).join('');
+      $('weightedFormula').textContent='('+active.map(rule=>`${fmt(rule.alpha)} × ${rule.speed}`).join(' + ')+') ÷ ('+active.map(rule=>fmt(rule.alpha)).join(' + ')+')';
+      $('weightedResult').textContent=`${fmt(m.numerator,1)} ÷ ${fmt(m.total)} ≈ ${fmt(m.output,1)} % → ${Math.round(m.output)} %`;
+      $('fanValue').textContent=Math.round(m.output)+' %';$('fanSpeed').textContent=m.output<1?'Apagado':m.output<35?'Lento':m.output<75?'Moderado':'Rápido';
+      $('fanMarker').style.left=m.output+'%';
+      $('rotor').style.animationDuration=(3.4-3.12*m.output/100).toFixed(2)+'s';$('rotor').style.animationPlayState=m.output<1?'paused':'running';$('fanHalo').style.display=m.output<35?'none':'block';
+    }
+    function stopAnimation(){state.playing=false;$('animate').setAttribute('aria-pressed','false');$('animate').textContent='▶ Animar entradas';document.documentElement.classList.remove('is-playing')}
+    function clearPresets(){document.querySelectorAll('[data-preset]').forEach(b=>{b.classList.remove('is-active');b.setAttribute('aria-pressed','false')})}
+    function setValues(t,h){state.t=clamp(Math.round(t),0,45);state.h=clamp(Math.round(h),0,100);render()}
+    for(const id of ['tempRange','humidityRange'])$(id).addEventListener('input',()=>{stopAnimation();setValues(+$('tempRange').value,+$('humidityRange').value);clearPresets()});
+    document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{stopAnimation();const p=presets[b.dataset.preset];setValues(p.t,p.h);document.querySelectorAll('[data-preset]').forEach(x=>{const on=x===b;x.classList.toggle('is-active',on);x.setAttribute('aria-pressed',String(on))})}));
+    $('animate').addEventListener('click',()=>{state.playing=!state.playing;if(state.playing){clearPresets();state.baseT=state.t;state.baseH=state.h;state.clock=0;state.last=performance.now();$('animate').textContent='Ⅱ Pausar entradas';$('animate').setAttribute('aria-pressed','true');document.documentElement.classList.add('is-playing')}else stopAnimation()});
+    function valueFromPointer(id,e){const rect=$(id).getBoundingClientRect(),max=id==='tempChart'?45:100;return clamp(Math.round((((e.clientX-rect.left)*360/rect.width)-30)/315*max),0,max)}
+    function showTip(id,value,e){const temp=id==='tempChart',tip=$(temp?'tempTip':'humidityTip'),card=$(temp?'tempCard':'humidityCard'),r=card.getBoundingClientRect();tip.innerHTML=temp?`<strong>${value} °C</strong><small>Baja ${fmt(lowTemp(value))} · templada ${fmt(mildTemp(value))} · alta ${fmt(highTemp(value))}</small><small>Clic o arrastra para ajustar</small>`:`<strong>${value} % de humedad</strong><small>Baja ${fmt(lowHumidity(value))} · media ${fmt(midHumidity(value))} · alta ${fmt(highHumidity(value))}</small><small>Clic o arrastra para ajustar</small>`;tip.hidden=false;tip.style.left=clamp(e.clientX-r.left+10,7,Math.max(7,r.width-230))+'px'}
+    for(const id of ['tempChart','humidityChart']){
+      const svg=$(id),tip=$(id==='tempChart'?'tempTip':'humidityTip');let dragging=false;
+      svg.addEventListener('pointerdown',e=>{e.preventDefault();dragging=true;svg.setPointerCapture(e.pointerId);const value=valueFromPointer(id,e);stopAnimation();clearPresets();if(id==='tempChart')setValues(value,state.h);else setValues(state.t,value);showTip(id,value,e)});
+      svg.addEventListener('pointermove',e=>{const value=valueFromPointer(id,e);if(dragging){if(id==='tempChart')setValues(value,state.h);else setValues(state.t,value)}showTip(id,value,e)});
+      svg.addEventListener('pointerup',e=>{dragging=false;if(svg.hasPointerCapture(e.pointerId))svg.releasePointerCapture(e.pointerId)});
+      svg.addEventListener('pointercancel',()=>{dragging=false;tip.hidden=true});svg.addEventListener('pointerleave',()=>{if(!dragging)tip.hidden=true});svg.addEventListener('blur',()=>tip.hidden=true);
+      svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key))return;e.preventDefault();stopAnimation();clearPresets();const temp=id==='tempChart',max=temp?45:100,current=temp?state.t:state.h;const next=e.key==='Home'?0:e.key==='End'?max:clamp(current+(['ArrowRight','ArrowUp'].includes(e.key)?1:-1)*(e.shiftKey?5:1),0,max);if(temp)setValues(next,state.h);else setValues(state.t,next)});
+    }
+    function tick(t){if(state.playing){const dt=clamp((t-state.last)/1000,0,.08);state.last=t;state.clock+=dt;if(t-state.lastRender>=50){setValues(state.baseT+9*Math.sin(state.clock*.68),state.baseH+19*Math.sin(state.clock*.47));state.lastRender=t}}requestAnimationFrame(tick)}
+    buildRuleTable();render();requestAnimationFrame(tick);
+  })();
+  </script>
+</body>
+</html>
